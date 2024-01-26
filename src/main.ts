@@ -4,10 +4,10 @@ import { Start } from "./scenes/startScene";
 import { Combat } from "./scenes/combatScene";
 
 let config = {
-  parent: "mygame",
+  parent: 'app',
   autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
   type: Phaser.CANVAS,
-  width: 1060,
+  width: 1080,
   height: 780,
   physics: {
     default: "arcade",
