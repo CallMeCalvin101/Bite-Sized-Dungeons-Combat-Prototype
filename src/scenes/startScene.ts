@@ -7,6 +7,9 @@ export class Start extends Phaser.Scene {
 
   create() {
     console.log("Start");
+    this.input.on("pointerdown", () => {
+      this.scene.start("Combat");
+    });
   }
 
   update() {}
