@@ -35,7 +35,7 @@ class Button extends Phaser.GameObjects.Rectangle {
 }
 
 class Bar extends Phaser.GameObjects.Rectangle {
-  maxValues: number;
+  maxValue: number;
   constructor(
     scene: Phaser.Scene,
     x: number,
@@ -45,7 +45,7 @@ class Bar extends Phaser.GameObjects.Rectangle {
     height: number
   ) {
     super(scene, x, y, maxLength, height, color);
-    this.maxValues = maxLength;
+    this.maxValue = maxLength;
     scene.add.existing(this);
   }
 
@@ -58,11 +58,20 @@ class Bar extends Phaser.GameObjects.Rectangle {
     const newWidth = this.width + amount;
     this.setSize(newWidth, this.height);
   }
+
+  resetBar() {
+    this.setSize(this.maxValue, this.height);
+  }
 }
 
 export class Combat extends Phaser.Scene {
+  enemyCooldown: Bar | null;
+  allyHealth: Bar[];
+
   constructor() {
     super("Combat");
+    this.enemyCooldown = null;
+    this.allyHealth = [];
   }
 
   preload() {}
@@ -74,18 +83,10 @@ export class Combat extends Phaser.Scene {
     this.drawAllies();
 
     const enemyHealth = new Bar(this, GAME_WIDTH / 2, 50, 0xcc0000, 750, 25);
-    const enemyCooldown = new Bar(
-      this,
-      GAME_WIDTH / 2,
-      67.5,
-      0x33bbff,
-      750,
-      10
-    );
-    const allyHealth: Bar[] = [];
+    this.enemyCooldown = new Bar(this, GAME_WIDTH / 2, 67.5, 0x33bbff, 750, 10);
 
     for (let i = 1; i < 5; i++) {
-      const allyHealth = new Bar(
+      const health = new Bar(
         this,
         (i * GAME_WIDTH) / 5,
         GAME_HEIGHT - GAME_HEIGHT / 3 - 30,
@@ -93,6 +94,7 @@ export class Combat extends Phaser.Scene {
         100,
         15
       );
+      this.allyHealth.push(health);
     }
 
     const test = new Button(
@@ -106,7 +108,18 @@ export class Combat extends Phaser.Scene {
     );
   }
 
-  update() {}
+  update() {
+    this.updateEnemyAttack(this.enemyCooldown!, this.allyHealth);
+  }
+
+  updateEnemyAttack(attackBar: Bar, allyParty: Bar[]) {
+    attackBar.decreaseBar(5);
+
+    if (attackBar.width <= 0) {
+      allyParty[Math.floor(Math.random() * 4)].decreaseBar(10);
+      attackBar.resetBar();
+    }
+  }
 
   drawEnemy() {
     const enemy = this.add.image(GAME_WIDTH / 2, 200, "dragon");
