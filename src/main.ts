@@ -9,16 +9,6 @@ let config = {
   type: Phaser.CANVAS,
   width: 1080,
   height: 780,
-  physics: {
-    default: "arcade",
-    arcade: {
-      debug: false,
-      gravity: {
-        x: 0,
-        y: 0,
-      },
-    },
-  },
   scene: [Start, Combat],
 };
 
