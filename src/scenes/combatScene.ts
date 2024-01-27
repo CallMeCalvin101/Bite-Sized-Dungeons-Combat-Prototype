@@ -66,12 +66,20 @@ class Bar extends Phaser.GameObjects.Rectangle {
 
 export class Combat extends Phaser.Scene {
   enemyCooldown: Bar | null;
+  enemyTarget: number;
+  enemyIntent: Phaser.GameObjects.Text | null;
   allyHealth: Bar[];
+  allyCooldown: Bar[];
+  playerCanAttack: Boolean;
 
   constructor() {
     super("Combat");
     this.enemyCooldown = null;
     this.allyHealth = [];
+    this.allyCooldown = [];
+    this.playerCanAttack = true;
+    this.enemyTarget = Math.floor(Math.random() * 4);
+    this.enemyIntent = null;
   }
 
   preload() {}
@@ -97,33 +105,80 @@ export class Combat extends Phaser.Scene {
       this.allyHealth.push(health);
     }
 
+    for (let i = 1; i < 5; i++) {
+      const cooldown = new Bar(
+        this,
+        (i * GAME_WIDTH) / 5,
+        GAME_HEIGHT - GAME_HEIGHT / 3 - 20,
+        0x33bbff,
+        100,
+        5
+      );
+      this.allyCooldown.push(cooldown);
+    }
+
+    this.allyCooldown[0].decreaseBar(100);
+
     const test = new Button(
       this,
       GAME_WIDTH / 4,
       GAME_HEIGHT - BUTTON_HEIGHT / 2 - 10,
       "Attack",
       () => {
-        enemyHealth.decreaseBar(50);
+        if (this.playerCanAttack) {
+          enemyHealth.decreaseBar(50);
+          this.playerCanAttack = false;
+          this.allyCooldown[0].resetBar();
+        }
       }
     );
   }
 
   update() {
     this.updateEnemyAttack(this.enemyCooldown!, this.allyHealth);
+    this.updatePlayerAttack(this.allyCooldown[0]);
+  }
+
+  enemySelectAllies() {
+    this.enemyTarget = Math.floor(Math.random() * 4);
+    while (this.allyHealth[this.enemyTarget].width <= 0) {
+      this.enemyTarget = Math.floor(Math.random() * 4);
+    }
   }
 
   updateEnemyAttack(attackBar: Bar, allyParty: Bar[]) {
     attackBar.decreaseBar(5);
 
     if (attackBar.width <= 0) {
-      allyParty[Math.floor(Math.random() * 4)].decreaseBar(10);
+      allyParty[this.enemyTarget].decreaseBar(10);
       attackBar.resetBar();
+      this.enemySelectAllies();
+      this.enemyIntent?.setText((this.enemyTarget + 1).toString());
+    }
+  }
+
+  updatePlayerAttack(attackBar: Bar) {
+    if (attackBar.width > 0) {
+      attackBar.decreaseBar(1);
+    } else {
+      this.playerCanAttack = true;
     }
   }
 
   drawEnemy() {
     const enemy = this.add.image(GAME_WIDTH / 2, 200, "dragon");
+    this.add.rectangle(GAME_WIDTH / 2, 55.25, 750, 35, 0x4d4d4d);
     enemy.setScale(0.5);
+
+    this.enemyIntent = this.add.text(
+      GAME_WIDTH / 4,
+      GAME_HEIGHT / 3,
+      (this.enemyTarget + 1).toString(),
+      { font: "Ariel" }
+    );
+
+    this.enemyIntent.setFontSize(128);
+    this.enemyIntent.setColor("Black");
   }
 
   drawUI() {
@@ -142,6 +197,16 @@ export class Combat extends Phaser.Scene {
       GAME_HEIGHT / 6,
       0xe6e6e6
     );
+
+    for (let i = 1; i < 5; i++) {
+      this.add.rectangle(
+        (i * GAME_WIDTH) / 5,
+        GAME_HEIGHT - GAME_HEIGHT / 3 - 27.5,
+        100,
+        20,
+        0x4d4d4d
+      );
+    }
   }
 
   drawAllies() {
@@ -153,6 +218,17 @@ export class Combat extends Phaser.Scene {
         100,
         0x79a6d2
       );
+    }
+
+    for (let i = 0; i < 4; i++) {
+      const text = this.add.text(
+        GAME_WIDTH / 5 + i * (GAME_WIDTH / 5) - 36,
+        GAME_HEIGHT - GAME_HEIGHT / 4 - 56,
+        (i + 1).toString(),
+        { font: "Ariel" }
+      );
+      text.setFontSize(128);
+      text.setColor("black");
     }
   }
 
