@@ -55,7 +55,10 @@ class Bar extends Phaser.GameObjects.Rectangle {
   }
 
   increaseBar(amount: number) {
-    const newWidth = this.width + amount;
+    let newWidth = this.width + amount;
+    if (newWidth > this.maxValue) {
+      newWidth = this.maxValue;
+    }
     this.setSize(newWidth, this.height);
   }
 
@@ -76,7 +79,11 @@ export class Combat extends Phaser.Scene {
   playerCanAttack: Boolean;
   skillAction: Button | null;
   canAttackSkill: Boolean;
-  numActionTaken = 0;
+  healAction: Button | null;
+  isSelectingHeal: Boolean;
+  numActionTaken: number;
+  alliedTarget: number;
+  highlightBox: Phaser.GameObjects.Rectangle[];
 
   constructor() {
     super("Combat");
@@ -91,6 +98,11 @@ export class Combat extends Phaser.Scene {
     this.allyCDRate = [1, 1, 1, 1];
     this.skillAction = null;
     this.canAttackSkill = true;
+    this.numActionTaken = 0;
+    this.alliedTarget = -1;
+    this.healAction = null;
+    this.isSelectingHeal = false;
+    this.highlightBox = [];
   }
 
   preload() {}
@@ -142,6 +154,7 @@ export class Combat extends Phaser.Scene {
           this.allyCDRate[0] = 1.5;
           this.numActionTaken += 1;
           this.allyCooldown[0].resetBar();
+          this.isSelectingHeal = false;
         }
       }
     );
@@ -152,20 +165,42 @@ export class Combat extends Phaser.Scene {
       GAME_HEIGHT - BUTTON_HEIGHT / 2 - 10,
       "Dual Strike",
       () => {
-        if (this.playerCanAttack && this.canAttackSkill) {
+        if (this.playerCanAttack) {
           this.enemyHealth!.decreaseBar(15);
           this.playerCanAttack = false;
           this.allyCooldown[0].resetBar();
           this.allyCDRate[0] = 0.75;
           this.numActionTaken = 0;
           this.canAttackSkill = false;
+          this.isSelectingHeal = false;
 
           setTimeout(() => {
-            this.enemyHealth!.decreaseBar(15);
+            this.enemyHealth!.decreaseBar(30);
           }, 200);
         }
       }
     );
+
+    this.healAction = new Button(
+      this,
+      GAME_WIDTH / 2,
+      GAME_HEIGHT - BUTTON_HEIGHT / 2 - 10,
+      "Heal",
+      () => {
+        if (this.playerCanAttack) {
+          this.isSelectingHeal = true;
+        }
+      }
+    );
+  }
+
+  parseHeal(target: number) {
+    this.isSelectingHeal = false;
+    this.allyHealth[target].increaseBar(50);
+    this.playerCanAttack = false;
+    this.allyCDRate[0] = 1;
+    this.numActionTaken += 1;
+    this.allyCooldown[0].resetBar();
   }
 
   update() {
@@ -222,6 +257,18 @@ export class Combat extends Phaser.Scene {
 
     if (this.numActionTaken >= 3) {
       this.canAttackSkill = true;
+    }
+
+    if (this.isSelectingHeal) {
+      this.healAction!.setFillStyle(0xb3ffd7);
+      for (const box of this.highlightBox) {
+        box.setAlpha(0.5);
+      }
+    } else {
+      this.healAction!.setFillStyle(0xffffff);
+      for (const box of this.highlightBox) {
+        box.setAlpha(0);
+      }
     }
   }
 
@@ -293,6 +340,18 @@ export class Combat extends Phaser.Scene {
     }
 
     for (let i = 0; i < 4; i++) {
+      const box = this.add.rectangle(
+        (i + 1) * (GAME_WIDTH / 5),
+        GAME_HEIGHT - GAME_HEIGHT / 4,
+        100,
+        100,
+        0xffffff,
+        1
+      );
+      this.highlightBox.push(box);
+    }
+
+    for (let i = 0; i < 4; i++) {
       const text = this.add.text(
         GAME_WIDTH / 5 + i * (GAME_WIDTH / 5) - 36,
         GAME_HEIGHT - GAME_HEIGHT / 4 - 56,
@@ -301,6 +360,13 @@ export class Combat extends Phaser.Scene {
       );
       text.setFontSize(128);
       text.setColor("black");
+      text.on("pointerdown", () => {
+        if (this.isSelectingHeal) {
+          this.parseHeal(i);
+        }
+        this.alliedTarget = i;
+      });
+      text.setInteractive();
     }
   }
 
