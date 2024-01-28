@@ -72,7 +72,11 @@ export class Combat extends Phaser.Scene {
   allyHealth: Bar[];
   allyCooldown: Bar[];
   allyCDRate: number[];
+
   playerCanAttack: Boolean;
+  skillAction: Button | null;
+  canAttackSkill: Boolean;
+  numActionTaken = 0;
 
   constructor() {
     super("Combat");
@@ -85,6 +89,8 @@ export class Combat extends Phaser.Scene {
     this.enemyTarget = Math.floor(Math.random() * 4);
     this.enemyIntent = null;
     this.allyCDRate = [1, 1, 1, 1];
+    this.skillAction = null;
+    this.canAttackSkill = true;
   }
 
   preload() {}
@@ -133,7 +139,30 @@ export class Combat extends Phaser.Scene {
         if (this.playerCanAttack) {
           this.enemyHealth!.decreaseBar(5);
           this.playerCanAttack = false;
+          this.allyCDRate[0] = 1.5;
+          this.numActionTaken += 1;
           this.allyCooldown[0].resetBar();
+        }
+      }
+    );
+
+    this.skillAction = new Button(
+      this,
+      (3 * GAME_WIDTH) / 4,
+      GAME_HEIGHT - BUTTON_HEIGHT / 2 - 10,
+      "Dual Strike",
+      () => {
+        if (this.playerCanAttack && this.canAttackSkill) {
+          this.enemyHealth!.decreaseBar(15);
+          this.playerCanAttack = false;
+          this.allyCooldown[0].resetBar();
+          this.allyCDRate[0] = 0.75;
+          this.numActionTaken = 0;
+          this.canAttackSkill = false;
+
+          setTimeout(() => {
+            this.enemyHealth!.decreaseBar(15);
+          }, 200);
         }
       }
     );
@@ -180,9 +209,19 @@ export class Combat extends Phaser.Scene {
 
   updatePlayerAttack(attackBar: Bar) {
     if (attackBar.width > 0) {
-      attackBar.decreaseBar(1);
+      attackBar.decreaseBar(this.allyCDRate[0]);
     } else {
       this.playerCanAttack = true;
+    }
+
+    if (this.canAttackSkill) {
+      this.skillAction!.setFillStyle(0xffffff);
+    } else {
+      this.skillAction!.setFillStyle(0x8c8c8c);
+    }
+
+    if (this.numActionTaken >= 3) {
+      this.canAttackSkill = true;
     }
   }
 
