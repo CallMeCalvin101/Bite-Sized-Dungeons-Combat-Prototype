@@ -65,21 +65,26 @@ class Bar extends Phaser.GameObjects.Rectangle {
 }
 
 export class Combat extends Phaser.Scene {
+  enemyHealth: Bar | null;
   enemyCooldown: Bar | null;
   enemyTarget: number;
   enemyIntent: Phaser.GameObjects.Text | null;
   allyHealth: Bar[];
   allyCooldown: Bar[];
+  allyCDRate: number[];
   playerCanAttack: Boolean;
 
   constructor() {
     super("Combat");
+
+    this.enemyHealth = null;
     this.enemyCooldown = null;
     this.allyHealth = [];
     this.allyCooldown = [];
     this.playerCanAttack = true;
     this.enemyTarget = Math.floor(Math.random() * 4);
     this.enemyIntent = null;
+    this.allyCDRate = [1, 1, 1, 1];
   }
 
   preload() {}
@@ -90,7 +95,7 @@ export class Combat extends Phaser.Scene {
     this.drawPlayer();
     this.drawAllies();
 
-    const enemyHealth = new Bar(this, GAME_WIDTH / 2, 50, 0xcc0000, 750, 25);
+    this.enemyHealth = new Bar(this, GAME_WIDTH / 2, 50, 0xcc0000, 750, 25);
     this.enemyCooldown = new Bar(this, GAME_WIDTH / 2, 67.5, 0x33bbff, 750, 10);
 
     for (let i = 1; i < 5; i++) {
@@ -119,14 +124,14 @@ export class Combat extends Phaser.Scene {
 
     this.allyCooldown[0].decreaseBar(100);
 
-    const test = new Button(
+    const attackAction = new Button(
       this,
       GAME_WIDTH / 4,
       GAME_HEIGHT - BUTTON_HEIGHT / 2 - 10,
       "Attack",
       () => {
         if (this.playerCanAttack) {
-          enemyHealth.decreaseBar(50);
+          this.enemyHealth!.decreaseBar(5);
           this.playerCanAttack = false;
           this.allyCooldown[0].resetBar();
         }
@@ -137,9 +142,25 @@ export class Combat extends Phaser.Scene {
   update() {
     this.updateEnemyAttack(this.enemyCooldown!, this.allyHealth);
     this.updatePlayerAttack(this.allyCooldown[0]);
+    this.updateAlliesAttack(
+      this.allyCooldown,
+      this.allyCDRate,
+      this.enemyHealth!
+    );
   }
 
   enemySelectAllies() {
+    let numAlliesDead = 0;
+    for (const allies of this.allyHealth) {
+      if (allies.width <= 0) {
+        numAlliesDead += 1;
+      }
+    }
+
+    if (numAlliesDead >= this.allyHealth.length) {
+      return;
+    }
+
     this.enemyTarget = Math.floor(Math.random() * 4);
     while (this.allyHealth[this.enemyTarget].width <= 0) {
       this.enemyTarget = Math.floor(Math.random() * 4);
@@ -162,6 +183,18 @@ export class Combat extends Phaser.Scene {
       attackBar.decreaseBar(1);
     } else {
       this.playerCanAttack = true;
+    }
+  }
+
+  updateAlliesAttack(attackBars: Bar[], cooldownRates: number[], enemy: Bar) {
+    for (let i = 1; i < 4; i++) {
+      if (attackBars[i].width > 0) {
+        attackBars[i].decreaseBar(cooldownRates[i]);
+      } else {
+        enemy.decreaseBar(1 * (5 - cooldownRates[i]));
+        attackBars[i].resetBar();
+        cooldownRates[i] = Math.floor(Math.random() * 4 + 1);
+      }
     }
   }
 
