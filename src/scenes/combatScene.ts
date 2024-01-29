@@ -198,7 +198,7 @@ export class Combat extends Phaser.Scene {
     this.isSelectingHeal = false;
     this.allyHealth[target].increaseBar(50);
     this.playerCanAttack = false;
-    this.allyCDRate[0] = 1;
+    this.allyCDRate[0] = 0.5;
     this.numActionTaken += 1;
     this.allyCooldown[0].resetBar();
   }
@@ -211,6 +211,10 @@ export class Combat extends Phaser.Scene {
       this.allyCDRate,
       this.enemyHealth!
     );
+
+    if (this.enemyHealth!.width <= 0 || this.allyHealth[0].width <= 0) {
+      this.endGame();
+    }
   }
 
   enemySelectAllies() {
@@ -235,7 +239,7 @@ export class Combat extends Phaser.Scene {
     attackBar.decreaseBar(5);
 
     if (attackBar.width <= 0) {
-      allyParty[this.enemyTarget].decreaseBar(10);
+      allyParty[this.enemyTarget].decreaseBar(20);
       attackBar.resetBar();
       this.enemySelectAllies();
       this.enemyIntent?.setText((this.enemyTarget + 1).toString());
@@ -378,5 +382,9 @@ export class Combat extends Phaser.Scene {
       100,
       0x00cccc
     );
+  }
+
+  endGame() {
+    this.scene.start("End");
   }
 }

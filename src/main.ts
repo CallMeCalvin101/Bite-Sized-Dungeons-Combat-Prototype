@@ -2,6 +2,7 @@ import "./style.css";
 import Phaser from "phaser";
 import { Start } from "./scenes/startScene";
 import { Combat } from "./scenes/combatScene";
+import { End } from "./scenes/endScene";
 
 let config = {
   parent: 'app',
@@ -9,7 +10,7 @@ let config = {
   type: Phaser.CANVAS,
   width: 1280,
   height: 720,
-  scene: [Start, Combat],
+  scene: [Start, Combat, End],
 };
 
 let game = new Phaser.Game(config);
