@@ -13,4 +13,4 @@ let config = {
   scene: [Start, Combat, End],
 };
 
-let game = new Phaser.Game(config);
+new Phaser.Game(config);

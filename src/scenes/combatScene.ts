@@ -159,6 +159,8 @@ export class Combat extends Phaser.Scene {
       }
     );
 
+    this.add.existing(attackAction);
+
     this.skillAction = new Button(
       this,
       (3 * GAME_WIDTH) / 4,
