@@ -4,7 +4,7 @@ export class Start extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("dragon", "/dragon.png");
+    this.load.image("dragon", "dragon.png");
   }
 
   create() {
