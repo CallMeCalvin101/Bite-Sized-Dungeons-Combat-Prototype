@@ -34,6 +34,96 @@ class Button extends Phaser.GameObjects.Rectangle {
   }
 }
 
+class Enemy {
+  healthBar: HealthBar;
+  attackBar: AttackBar;
+  target: number;
+  targetText: Phaser.GameObjects.Text;
+
+  constructor(scene: Phaser.Scene, maxHealth: number) {
+    this.healthBar = new HealthBar(
+      scene,
+      GAME_WIDTH / 2,
+      60,
+      750,
+      40,
+      maxHealth
+    );
+
+    this.attackBar = new AttackBar(
+      scene,
+      GAME_WIDTH / 2,
+      80,
+      750,
+      20,
+      maxHealth
+    );
+
+    this.target = Math.floor(4 * Math.random());
+
+    this.targetText = scene.add.text(
+      GAME_WIDTH / 2 - 348,
+      80 - 8,
+      `TARGET: ${(this.target + 1).toString()}`,
+      { font: "Ariel" }
+    );
+
+    this.targetText.setFontSize(18);
+    this.targetText.setColor("Black");
+  }
+
+  getHealth(): number {
+    return this.healthBar.getValue();
+  }
+
+  damage(amount: number) {
+    this.healthBar.decreaseBar(amount);
+  }
+
+  selectTarget(allyParty: HealthBar[], target: number = -1) {
+    if (target > -1) {
+      this.target = target;
+      return;
+    }
+
+    let numAlliesDead = 0;
+    for (const allies of allyParty) {
+      if (allies.getValue() <= 0) {
+        numAlliesDead += 1;
+      }
+    }
+
+    if (numAlliesDead >= allyParty.length) {
+      return;
+    }
+
+    this.target = Math.floor(Math.random() * 4);
+    while (allyParty[this.target].getValue() <= 0) {
+      this.target = Math.floor(Math.random() * 4);
+    }
+  }
+
+  updateAttackBar(allyParty: HealthBar[]) {
+    this.attackBar.decreaseBar(5);
+
+    if (this.attackBar.getValue() <= 0) {
+      allyParty[this.target].decreaseBar(20);
+      this.attackBar.resetBar();
+      this.selectTarget(allyParty);
+    }
+  }
+
+  draw(scene: Phaser.Scene) {
+    this.healthBar.drawBar();
+    this.attackBar.drawBar();
+
+    const enemy = scene.add.image(GAME_WIDTH / 2, 200, "dragon");
+    enemy.setScale(0.5);
+
+    this.targetText.setText(`TARGET: ${(this.target + 1).toString()}`);
+  }
+}
+
 interface Bar {
   valueBar: Phaser.GameObjects.Rectangle;
   background: Phaser.GameObjects.Rectangle;
@@ -147,10 +237,7 @@ class AttackBar extends HealthBar {
 }
 
 export class Combat extends Phaser.Scene {
-  enemyHealth: HealthBar | null;
-  enemyCooldown: AttackBar | null;
-  enemyTarget: number;
-  enemyIntent: Phaser.GameObjects.Text | null;
+  enemy: Enemy | null;
   allyHealth: HealthBar[];
   allyCooldown: AttackBar[];
   allyCDRate: number[];
@@ -167,13 +254,10 @@ export class Combat extends Phaser.Scene {
   constructor() {
     super("Combat");
 
-    this.enemyHealth = null;
-    this.enemyCooldown = null;
+    this.enemy = null;
     this.allyHealth = [];
     this.allyCooldown = [];
     this.playerCanAttack = true;
-    this.enemyTarget = Math.floor(Math.random() * 4);
-    this.enemyIntent = null;
     this.allyCDRate = [1, 1, 1, 1];
     this.skillAction = null;
     this.canAttackSkill = true;
@@ -188,19 +272,10 @@ export class Combat extends Phaser.Scene {
 
   create() {
     this.drawUI();
-    this.drawEnemy();
     this.drawPlayer();
     this.drawAllies();
 
-    this.enemyHealth = new HealthBar(this, GAME_WIDTH / 2, 50, 750, 25, 750);
-    this.enemyCooldown = new AttackBar(
-      this,
-      GAME_WIDTH / 2,
-      67.5,
-      750,
-      10,
-      750
-    );
+    this.enemy = new Enemy(this, 750);
 
     for (let i = 1; i < 5; i++) {
       const health = new HealthBar(
@@ -235,7 +310,7 @@ export class Combat extends Phaser.Scene {
       "Attack",
       () => {
         if (this.playerCanAttack) {
-          this.enemyHealth!.decreaseBar(5);
+          this.enemy?.damage(5);
           this.playerCanAttack = false;
           this.allyCDRate[0] = 1.5;
           this.numActionTaken += 1;
@@ -254,7 +329,7 @@ export class Combat extends Phaser.Scene {
       "Dual Strike",
       () => {
         if (this.playerCanAttack) {
-          this.enemyHealth!.decreaseBar(15);
+          this.enemy?.damage(15);
           this.playerCanAttack = false;
           this.allyCooldown[0].resetBar();
           this.allyCDRate[0] = 0.75;
@@ -263,7 +338,7 @@ export class Combat extends Phaser.Scene {
           this.isSelectingHeal = false;
 
           setTimeout(() => {
-            this.enemyHealth!.decreaseBar(30);
+            this.enemy?.damage(30);
           }, 200);
         }
       }
@@ -292,51 +367,24 @@ export class Combat extends Phaser.Scene {
   }
 
   update() {
-    this.updateEnemyAttack(this.enemyCooldown!, this.allyHealth);
+    this.enemy?.draw(this);
     this.updatePlayerAttack(this.allyCooldown[0]);
     this.updateAlliesAttack(
       this.allyCooldown,
       this.allyCDRate,
-      this.enemyHealth!
+      this.enemy?.healthBar!
     );
 
+    this.enemy?.updateAttackBar(this.allyHealth);
+
     if (
-      this.enemyHealth!.getValue() <= 0 ||
+      this.enemy!.healthBar.getValue() <= 0 ||
       this.allyHealth[0].getValue() <= 0
     ) {
       this.endGame();
     }
 
     this.drawBars();
-  }
-
-  enemySelectAllies() {
-    let numAlliesDead = 0;
-    for (const allies of this.allyHealth) {
-      if (allies.getValue() <= 0) {
-        numAlliesDead += 1;
-      }
-    }
-
-    if (numAlliesDead >= this.allyHealth.length) {
-      return;
-    }
-
-    this.enemyTarget = Math.floor(Math.random() * 4);
-    while (this.allyHealth[this.enemyTarget].getValue() <= 0) {
-      this.enemyTarget = Math.floor(Math.random() * 4);
-    }
-  }
-
-  updateEnemyAttack(attackBar: Bar, allyParty: Bar[]) {
-    attackBar.decreaseBar(5);
-
-    if (attackBar.getValue() <= 0) {
-      allyParty[this.enemyTarget].decreaseBar(20);
-      attackBar.resetBar();
-      this.enemySelectAllies();
-      this.enemyIntent?.setText((this.enemyTarget + 1).toString());
-    }
   }
 
   updatePlayerAttack(attackBar: Bar) {
@@ -381,22 +429,6 @@ export class Combat extends Phaser.Scene {
 
       attackBars[i].drawBar();
     }
-  }
-
-  drawEnemy() {
-    const enemy = this.add.image(GAME_WIDTH / 2, 200, "dragon");
-    this.add.rectangle(GAME_WIDTH / 2, 55.25, 750, 35, 0x4d4d4d);
-    enemy.setScale(0.5);
-
-    this.enemyIntent = this.add.text(
-      GAME_WIDTH / 4,
-      GAME_HEIGHT / 3,
-      (this.enemyTarget + 1).toString(),
-      { font: "Ariel" }
-    );
-
-    this.enemyIntent.setFontSize(128);
-    this.enemyIntent.setColor("Black");
   }
 
   drawUI() {
@@ -480,8 +512,6 @@ export class Combat extends Phaser.Scene {
   }
 
   drawBars() {
-    this.enemyHealth?.drawBar();
-    this.enemyCooldown?.drawBar();
     for (let i = 0; i < 4; i++) {
       this.allyHealth[i].drawBar();
       this.allyCooldown[i].drawBar();
