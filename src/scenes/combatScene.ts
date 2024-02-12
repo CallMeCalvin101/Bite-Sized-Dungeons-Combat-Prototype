@@ -95,6 +95,9 @@ class HealthBar implements Bar {
 
   increaseBar(amount: number) {
     this.currentValue += amount;
+    if (this.currentValue > this.maxValue) {
+      this.currentValue = this.maxValue;
+    }
   }
 
   resetBar() {
@@ -113,11 +116,7 @@ class HealthBar implements Bar {
   }
 }
 
-class AttackBar implements Bar {
-  valueBar: Phaser.GameObjects.Rectangle;
-  background: Phaser.GameObjects.Rectangle;
-  maxWidth: number;
-  maxValue: number;
+class AttackBar extends HealthBar {
   currentValue: number;
   decrementAmount: number;
 
@@ -129,58 +128,14 @@ class AttackBar implements Bar {
     height: number,
     maxValue: number
   ) {
-    this.background = new Phaser.GameObjects.Rectangle(
-      scene,
-      xPos,
-      yPos,
-      width,
-      height,
-      0xbab4b4
-    );
-
-    this.valueBar = new Phaser.GameObjects.Rectangle(
-      scene,
-      xPos,
-      yPos,
-      width,
-      height,
-      0x23cbf8
-    );
-
-    scene.add.existing(this.background);
-    scene.add.existing(this.valueBar);
-
-    this.maxWidth = width;
-    this.maxValue = maxValue;
+    super(scene, xPos, yPos, width, height, maxValue);
+    this.valueBar.setFillStyle(0x23cbf8);
     this.currentValue = maxValue;
     this.decrementAmount = 5;
   }
 
-  decreaseBar(amount: number) {
-    this.currentValue -= amount;
-  }
-
-  increaseBar(amount: number) {
-    this.currentValue += amount;
-  }
-
-  resetBar() {
-    this.currentValue = this.maxValue;
-  }
-
-  getValue(): number {
-    return this.currentValue;
-  }
-
   canAttack(): boolean {
     return this.currentValue <= 0;
-  }
-
-  drawBar() {
-    this.valueBar.width = (this.currentValue / this.maxValue) * this.maxValue;
-    if (this.valueBar.width < 0) {
-      this.valueBar.width = 0;
-    }
   }
 
   update() {
