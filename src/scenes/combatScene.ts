@@ -34,46 +34,170 @@ class Button extends Phaser.GameObjects.Rectangle {
   }
 }
 
-class Bar extends Phaser.GameObjects.Rectangle {
+interface Bar {
+  valueBar: Phaser.GameObjects.Rectangle;
+  background: Phaser.GameObjects.Rectangle;
+  maxWidth: number;
   maxValue: number;
+  currentValue: number;
+
+  decreaseBar(amount: number): void;
+  increaseBar(amount: number): void;
+  resetBar(): void;
+  getValue(): number;
+  drawBar(): void;
+}
+
+class HealthBar implements Bar {
+  valueBar: Phaser.GameObjects.Rectangle;
+  background: Phaser.GameObjects.Rectangle;
+  maxWidth: number;
+  maxValue: number;
+  currentValue: number;
+
   constructor(
     scene: Phaser.Scene,
-    x: number,
-    y: number,
-    color: number,
-    maxLength: number,
-    height: number
+    xPos: number,
+    yPos: number,
+    width: number,
+    height: number,
+    maxValue: number
   ) {
-    super(scene, x, y, maxLength, height, color);
-    this.maxValue = maxLength;
-    scene.add.existing(this);
+    this.background = new Phaser.GameObjects.Rectangle(
+      scene,
+      xPos,
+      yPos,
+      width,
+      height,
+      0xbab4b4
+    );
+
+    this.valueBar = new Phaser.GameObjects.Rectangle(
+      scene,
+      xPos,
+      yPos,
+      width,
+      height,
+      0xf42c2c
+    );
+
+    scene.add.existing(this.background);
+    scene.add.existing(this.valueBar);
+
+    this.maxWidth = width;
+    this.maxValue = maxValue;
+    this.currentValue = maxValue;
   }
 
   decreaseBar(amount: number) {
-    const newWidth = this.width - amount;
-    this.setSize(newWidth, this.height);
+    this.currentValue -= amount;
   }
 
   increaseBar(amount: number) {
-    let newWidth = this.width + amount;
-    if (newWidth > this.maxValue) {
-      newWidth = this.maxValue;
-    }
-    this.setSize(newWidth, this.height);
+    this.currentValue += amount;
   }
 
   resetBar() {
-    this.setSize(this.maxValue, this.height);
+    this.currentValue = this.maxValue;
+  }
+
+  getValue(): number {
+    return this.currentValue;
+  }
+
+  drawBar() {
+    this.valueBar.width = (this.currentValue / this.maxValue) * this.maxValue;
+    if (this.valueBar.width < 0) {
+      this.valueBar.width = 0;
+    }
+  }
+}
+
+class AttackBar implements Bar {
+  valueBar: Phaser.GameObjects.Rectangle;
+  background: Phaser.GameObjects.Rectangle;
+  maxWidth: number;
+  maxValue: number;
+  currentValue: number;
+  decrementAmount: number;
+
+  constructor(
+    scene: Phaser.Scene,
+    xPos: number,
+    yPos: number,
+    width: number,
+    height: number,
+    maxValue: number
+  ) {
+    this.background = new Phaser.GameObjects.Rectangle(
+      scene,
+      xPos,
+      yPos,
+      width,
+      height,
+      0xbab4b4
+    );
+
+    this.valueBar = new Phaser.GameObjects.Rectangle(
+      scene,
+      xPos,
+      yPos,
+      width,
+      height,
+      0x23cbf8
+    );
+
+    scene.add.existing(this.background);
+    scene.add.existing(this.valueBar);
+
+    this.maxWidth = width;
+    this.maxValue = maxValue;
+    this.currentValue = maxValue;
+    this.decrementAmount = 5;
+  }
+
+  decreaseBar(amount: number) {
+    this.currentValue -= amount;
+  }
+
+  increaseBar(amount: number) {
+    this.currentValue += amount;
+  }
+
+  resetBar() {
+    this.currentValue = this.maxValue;
+  }
+
+  getValue(): number {
+    return this.currentValue;
+  }
+
+  canAttack(): boolean {
+    return this.currentValue <= 0;
+  }
+
+  drawBar() {
+    this.valueBar.width = (this.currentValue / this.maxValue) * this.maxValue;
+    if (this.valueBar.width < 0) {
+      this.valueBar.width = 0;
+    }
+  }
+
+  update() {
+    if (this.currentValue > 0) {
+      this.decreaseBar(this.decrementAmount);
+      this.drawBar();
+    }
   }
 }
 
 export class Combat extends Phaser.Scene {
-  enemyHealth: Bar | null;
-  enemyCooldown: Bar | null;
+  enemyHealth: HealthBar | null;
+  enemyCooldown: AttackBar | null;
   enemyTarget: number;
   enemyIntent: Phaser.GameObjects.Text | null;
-  allyHealth: Bar[];
-  allyCooldown: Bar[];
+  allyHealth: HealthBar[];
+  allyCooldown: AttackBar[];
   allyCDRate: number[];
 
   playerCanAttack: Boolean;
@@ -113,29 +237,36 @@ export class Combat extends Phaser.Scene {
     this.drawPlayer();
     this.drawAllies();
 
-    this.enemyHealth = new Bar(this, GAME_WIDTH / 2, 50, 0xcc0000, 750, 25);
-    this.enemyCooldown = new Bar(this, GAME_WIDTH / 2, 67.5, 0x33bbff, 750, 10);
+    this.enemyHealth = new HealthBar(this, GAME_WIDTH / 2, 50, 750, 25, 750);
+    this.enemyCooldown = new AttackBar(
+      this,
+      GAME_WIDTH / 2,
+      67.5,
+      750,
+      10,
+      750
+    );
 
     for (let i = 1; i < 5; i++) {
-      const health = new Bar(
+      const health = new HealthBar(
         this,
         (i * GAME_WIDTH) / 5,
         GAME_HEIGHT - GAME_HEIGHT / 3 - 30,
-        0xcc0000,
         100,
-        15
+        15,
+        100
       );
       this.allyHealth.push(health);
     }
 
     for (let i = 1; i < 5; i++) {
-      const cooldown = new Bar(
+      const cooldown = new AttackBar(
         this,
         (i * GAME_WIDTH) / 5,
         GAME_HEIGHT - GAME_HEIGHT / 3 - 20,
-        0x33bbff,
         100,
-        5
+        5,
+        100
       );
       this.allyCooldown.push(cooldown);
     }
@@ -214,15 +345,20 @@ export class Combat extends Phaser.Scene {
       this.enemyHealth!
     );
 
-    if (this.enemyHealth!.width <= 0 || this.allyHealth[0].width <= 0) {
+    if (
+      this.enemyHealth!.getValue() <= 0 ||
+      this.allyHealth[0].getValue() <= 0
+    ) {
       this.endGame();
     }
+
+    this.drawBars();
   }
 
   enemySelectAllies() {
     let numAlliesDead = 0;
     for (const allies of this.allyHealth) {
-      if (allies.width <= 0) {
+      if (allies.getValue() <= 0) {
         numAlliesDead += 1;
       }
     }
@@ -232,7 +368,7 @@ export class Combat extends Phaser.Scene {
     }
 
     this.enemyTarget = Math.floor(Math.random() * 4);
-    while (this.allyHealth[this.enemyTarget].width <= 0) {
+    while (this.allyHealth[this.enemyTarget].getValue() <= 0) {
       this.enemyTarget = Math.floor(Math.random() * 4);
     }
   }
@@ -240,7 +376,7 @@ export class Combat extends Phaser.Scene {
   updateEnemyAttack(attackBar: Bar, allyParty: Bar[]) {
     attackBar.decreaseBar(5);
 
-    if (attackBar.width <= 0) {
+    if (attackBar.getValue() <= 0) {
       allyParty[this.enemyTarget].decreaseBar(20);
       attackBar.resetBar();
       this.enemySelectAllies();
@@ -249,7 +385,7 @@ export class Combat extends Phaser.Scene {
   }
 
   updatePlayerAttack(attackBar: Bar) {
-    if (attackBar.width > 0) {
+    if (attackBar.getValue() > 0) {
       attackBar.decreaseBar(this.allyCDRate[0]);
     } else {
       this.playerCanAttack = true;
@@ -280,13 +416,15 @@ export class Combat extends Phaser.Scene {
 
   updateAlliesAttack(attackBars: Bar[], cooldownRates: number[], enemy: Bar) {
     for (let i = 1; i < 4; i++) {
-      if (attackBars[i].width > 0) {
+      if (attackBars[i].getValue() > 0) {
         attackBars[i].decreaseBar(cooldownRates[i]);
       } else {
         enemy.decreaseBar(1 * (5 - cooldownRates[i]));
         attackBars[i].resetBar();
         cooldownRates[i] = Math.floor(Math.random() * 4 + 1);
       }
+
+      attackBars[i].drawBar();
     }
   }
 
@@ -384,6 +522,15 @@ export class Combat extends Phaser.Scene {
       100,
       0x00cccc
     );
+  }
+
+  drawBars() {
+    this.enemyHealth?.drawBar();
+    this.enemyCooldown?.drawBar();
+    for (let i = 0; i < 4; i++) {
+      this.allyHealth[i].drawBar();
+      this.allyCooldown[i].drawBar();
+    }
   }
 
   endGame() {
