@@ -10,7 +10,7 @@ export class Start extends Phaser.Scene {
   create() {
     console.log("Start");
     this.input.on("pointerdown", () => {
-      this.scene.start("Combat");
+      this.scene.start("Combat2");
     });
 
     this.add.rectangle(1280 / 2, 720 / 2, 1280, 720, 0xe6e6e6);
