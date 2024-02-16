@@ -57,6 +57,7 @@ class Button extends Phaser.GameObjects.Rectangle {
 
 export class Combat2 extends Phaser.Scene {
   player: Player | null;
+  playerHealthText: Phaser.GameObjects.Text | null;
   allies: Player[];
   alliesHitbox: Phaser.GameObjects.Rectangle[];
   skills: Button[];
@@ -69,6 +70,7 @@ export class Combat2 extends Phaser.Scene {
     super("Combat2");
 
     this.player = null;
+    this.playerHealthText = null;
     this.allies = [];
     this.alliesHitbox = [];
     this.skills = [];
@@ -107,6 +109,16 @@ export class Combat2 extends Phaser.Scene {
     );
     this.allies.push(this.player);
     this.player.setActRate(1);
+
+    this.playerHealthText = this.add.text(
+      40,
+      GAME_HEIGHT - 10 - 100 - 22,
+      `${this.player.health()}/${this.player.healthbar.maxValue}`
+    );
+    this.playerHealthText.setFontSize("20px");
+    this.playerHealthText.setFontStyle("bold");
+    this.playerHealthText.setColor("black");
+
     this.player.addSkill(skillList.get("heal")!);
     this.player.addSkill(skillList.get("dual strikes")!);
   }
@@ -197,6 +209,9 @@ export class Combat2 extends Phaser.Scene {
   drawCharacters() {
     this.enemy?.draw(this);
     this.player?.draw(this);
+    this.playerHealthText?.setText(
+      `${this.player!.health()}/${this.player!.healthbar.maxValue}`
+    );
     for (const ally of this.allies) {
       ally.draw(this);
     }
