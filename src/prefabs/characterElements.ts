@@ -1,7 +1,5 @@
-import { Constraint } from "matter";
-
 const GAME_WIDTH = 1280;
-const GAME_HEIGHT = 720;
+// const GAME_HEIGHT = 720;
 
 export enum SkillType {
   TargetEnemy,
@@ -51,7 +49,7 @@ class Character {
     this.actionbar.valueBar.setPosition(xPos, yPos + h2 / 2);
   }
 
-  draw(scene: Phaser.Scene) {
+  draw() {
     this.healthbar.drawBar();
     this.actionbar.drawBar();
   }
@@ -153,8 +151,8 @@ export class Enemy extends Character {
     }
   }
 
-  draw(scene: Phaser.Scene) {
-    super.draw(scene);
+  draw() {
+    super.draw();
     this.targetText.setText(`TARGET: ${(this.target + 1).toString()}`);
   }
 }

@@ -1,4 +1,4 @@
-import { Enemy, HealthBar, Skill, SkillType } from "./characterElements";
+import { HealthBar, Skill, SkillType } from "./characterElements";
 
 export const skillList: Map<string, Skill> = new Map();
 
