@@ -211,13 +211,13 @@ export class Combat2 extends Phaser.Scene {
   }
 
   drawCharacters() {
-    this.enemy?.draw(this);
-    this.player?.draw(this);
+    this.enemy?.draw();
+    this.player?.draw();
     this.playerHealthText?.setText(
       `${this.player!.health()}/${this.player!.healthbar.maxValue}`
     );
     for (const ally of this.allies) {
-      ally.draw(this);
+      ally.draw();
     }
   }
 
