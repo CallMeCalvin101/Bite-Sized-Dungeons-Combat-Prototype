@@ -59,7 +59,6 @@ class Character {
 
 export class Player extends Character {
   skills: Map<string, Skill>;
-  isAlive: Boolean;
 
   constructor(
     scene: Phaser.Scene,
@@ -73,7 +72,10 @@ export class Player extends Character {
   ) {
     super(scene, x, y, w, h1, v1, h2, v2);
     this.skills = new Map();
-    this.isAlive = true;
+  }
+
+  isAlive(): boolean {
+    return this.health() > 0;
   }
 
   addSkill(skill: Skill) {
@@ -102,6 +104,9 @@ export class Enemy extends Character {
 
   constructor(scene: Phaser.Scene, maxHealth: number) {
     super(scene, GAME_WIDTH / 2, 60, 750, 40, maxHealth, 20, maxHealth);
+    const enemy = scene.add.image(GAME_WIDTH / 2, 200, "dragon");
+    enemy.setScale(0.5);
+
     this.target = Math.floor(4 * Math.random());
 
     this.targetText = scene.add.text(
@@ -115,7 +120,7 @@ export class Enemy extends Character {
     this.targetText.setColor("Black");
   }
 
-  selectTarget(allyParty: HealthBar[], target: number = -1) {
+  selectTarget(allyParty: Player[], target: number = -1) {
     if (target > -1) {
       this.target = target;
       return;
@@ -123,7 +128,7 @@ export class Enemy extends Character {
 
     let numAlliesDead = 0;
     for (const allies of allyParty) {
-      if (allies.getValue() <= 0) {
+      if (!allies.isAlive()) {
         numAlliesDead += 1;
       }
     }
@@ -133,16 +138,16 @@ export class Enemy extends Character {
     }
 
     this.target = Math.floor(Math.random() * 4);
-    while (allyParty[this.target].getValue() <= 0) {
+    while (!allyParty[this.target].isAlive()) {
       this.target = Math.floor(Math.random() * 4);
     }
   }
 
-  updateActionBar(allyParty: HealthBar[]) {
+  updateAction(allyParty: Player[]) {
     this.actionbar.decreaseBar(5);
 
     if (this.actionbar.getValue() <= 0) {
-      allyParty[this.target].decreaseBar(20);
+      allyParty[this.target].damage(20);
       this.actionbar.resetBar();
       this.selectTarget(allyParty);
     }
@@ -150,10 +155,6 @@ export class Enemy extends Character {
 
   draw(scene: Phaser.Scene) {
     super.draw(scene);
-
-    const enemy = scene.add.image(GAME_WIDTH / 2, 200, "dragon");
-    enemy.setScale(0.5);
-
     this.targetText.setText(`TARGET: ${(this.target + 1).toString()}`);
   }
 }

@@ -1,4 +1,4 @@
-import { Enemy, Player } from "../prefabs/characterElements";
+import { Enemy, HealthBar, Player } from "../prefabs/characterElements";
 import { skillList } from "../prefabs/skills";
 
 const GAME_WIDTH = 1280;
@@ -58,6 +58,7 @@ class Button extends Phaser.GameObjects.Rectangle {
 export class Combat2 extends Phaser.Scene {
   player: Player | null;
   allies: Player[];
+  alliesHitbox: Phaser.GameObjects.Rectangle[];
   skills: Button[];
   enemy: Enemy | null;
   system = {
@@ -69,6 +70,7 @@ export class Combat2 extends Phaser.Scene {
 
     this.player = null;
     this.allies = [];
+    this.alliesHitbox = [];
     this.skills = [];
     this.enemy = null;
   }
@@ -89,6 +91,7 @@ export class Combat2 extends Phaser.Scene {
     this.drawCharacters();
     this.drawSkills();
     this.player?.actionbar.update();
+    this.enemy?.updateAction(this.allies);
   }
 
   initializePlayer() {
@@ -102,21 +105,39 @@ export class Combat2 extends Phaser.Scene {
       10,
       100
     );
+    this.allies.push(this.player);
     this.player.setActRate(1);
     this.player.addSkill(skillList.get("heal")!);
     this.player.addSkill(skillList.get("dual strikes")!);
   }
 
   initializeAllies() {
-    this.allies = [];
     for (let i = 1; i < 4; i++) {
       const ally = new Player(
         this,
         (GAME_WIDTH * i) / 4,
-        GAME_HEIGHT - GAME_HEIGHT / 3
+        GAME_HEIGHT - GAME_HEIGHT / 3 - 75
       );
       this.allies.push(ally);
+
+      this.add.rectangle(
+        (GAME_WIDTH * i) / 4,
+        GAME_HEIGHT - GAME_HEIGHT / 3,
+        100,
+        100,
+        0x79a6d2
+      );
+
+      const text = this.add.text(
+        (GAME_WIDTH * i) / 4 - 40,
+        GAME_HEIGHT - GAME_HEIGHT / 3 - 56,
+        `${i + 1}`
+      );
+      text.setFontSize(128);
+      text.setColor("black");
     }
+
+    console.log(this.allies.length);
   }
 
   initializeSkills() {
@@ -145,6 +166,14 @@ export class Combat2 extends Phaser.Scene {
         },
         5
       )
+    );
+
+    this.skills.push(
+      new Button(this, GAME_WIDTH / 2, GAME_HEIGHT - 60, "Heal", () => {
+        if (this.player?.canAct()) {
+          this.targetAlly(this.player.getSkill("heal").effect);
+        }
+      })
     );
   }
 
@@ -187,5 +216,63 @@ export class Combat2 extends Phaser.Scene {
     for (const skill of this.skills) {
       skill.draw();
     }
+  }
+
+  destroyAllBoxes() {
+    for (const box of this.alliesHitbox) {
+      box.destroy();
+    }
+    this.alliesHitbox = [];
+  }
+
+  targetAlly(fn: (healthbar: HealthBar) => void) {
+    const removeTargetClickBox = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      GAME_WIDTH,
+      GAME_HEIGHT,
+      0xffffff,
+      0
+    );
+    this.alliesHitbox.push(removeTargetClickBox);
+
+    const playerClickbox = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT - 50,
+      GAME_WIDTH,
+      100,
+      0xffffff,
+      0.5
+    );
+
+    this.alliesHitbox.push(playerClickbox);
+
+    for (let i = 1; i < 4; i++) {
+      const allyClickbox = this.add.rectangle(
+        (GAME_WIDTH * i) / 4,
+        GAME_HEIGHT - GAME_HEIGHT / 3,
+        100,
+        100,
+        0xffffff,
+        0.5
+      );
+      this.alliesHitbox.push(allyClickbox);
+    }
+
+    for (let i = 0; i < this.allies.length; i++) {
+      this.alliesHitbox[i + 1].setInteractive();
+      this.alliesHitbox[i + 1].on("pointerdown", () => {
+        fn(this.allies[i]!.healthbar);
+        this.player!.setActRate(0.5);
+        this.passTurns();
+
+        this.destroyAllBoxes();
+      });
+    }
+
+    this.alliesHitbox[0].setInteractive();
+    this.alliesHitbox[0].on("pointerdown", () => {
+      this.destroyAllBoxes();
+    });
   }
 }
