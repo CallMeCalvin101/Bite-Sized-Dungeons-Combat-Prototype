@@ -94,6 +94,10 @@ export class Combat2 extends Phaser.Scene {
     this.drawSkills();
     this.player?.actionbar.update();
     this.enemy?.updateAction(this.allies);
+
+    if (!this.player?.isAlive() || this.enemy!.health() <= 0) {
+      this.endGame();
+    }
   }
 
   initializePlayer() {
@@ -289,5 +293,9 @@ export class Combat2 extends Phaser.Scene {
     this.alliesHitbox[0].on("pointerdown", () => {
       this.destroyAllBoxes();
     });
+  }
+
+  endGame() {
+    this.scene.start("End");
   }
 }
