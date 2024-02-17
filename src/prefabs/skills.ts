@@ -1,4 +1,17 @@
-import { HealthBar, Skill, SkillType } from "./characterElements";
+import { HealthBar } from "./characterElements";
+
+export enum SkillType {
+  TargetEnemy,
+  TargetAlly,
+}
+
+export interface Skill {
+  name: string;
+  type: SkillType;
+  description: string;
+  actRate: number;
+  effect(target: HealthBar): void;
+}
 
 export const skillList: Map<string, Skill> = new Map();
 

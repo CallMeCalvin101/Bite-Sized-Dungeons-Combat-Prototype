@@ -1,9 +1,5 @@
-import {
-  Enemy,
-  Player,
-  TargetAllyAction,
-  TargetEnemyAction,
-} from "../prefabs/characterElements";
+import { Enemy, Player } from "../prefabs/characterElements";
+import { TargetAllyAction, TargetEnemyAction } from "../prefabs/actions";
 import { skillList } from "../prefabs/skills";
 
 const GAME_WIDTH = 1280;
@@ -12,8 +8,8 @@ const GAME_HEIGHT = 720;
 export class Combat2 extends Phaser.Scene {
   player: Player | null;
   playerHealthText: Phaser.GameObjects.Text | null;
+  skillDescription: Phaser.GameObjects.Text | null;
   allies: Player[];
-  alliesHitbox: Phaser.GameObjects.Rectangle[];
   enemy: Enemy | null;
   system = {
     isTargetingAlly: false,
@@ -24,8 +20,8 @@ export class Combat2 extends Phaser.Scene {
 
     this.player = null;
     this.playerHealthText = null;
+    this.skillDescription = null;
     this.allies = [];
-    this.alliesHitbox = [];
     this.enemy = null;
   }
 
@@ -108,6 +104,7 @@ export class Combat2 extends Phaser.Scene {
     this.player?.addAction(
       new TargetEnemyAction(
         this,
+        this.skillDescription!,
         GAME_WIDTH / 4,
         GAME_HEIGHT - 60,
         this.player,
@@ -119,6 +116,7 @@ export class Combat2 extends Phaser.Scene {
     this.player?.addAction(
       new TargetEnemyAction(
         this,
+        this.skillDescription!,
         (3 * GAME_WIDTH) / 4,
         GAME_HEIGHT - 60,
         this.player,
@@ -131,6 +129,7 @@ export class Combat2 extends Phaser.Scene {
     this.player?.addAction(
       new TargetAllyAction(
         this,
+        this.skillDescription!,
         GAME_WIDTH / 2,
         GAME_HEIGHT - 60,
         this.player,
@@ -169,6 +168,15 @@ export class Combat2 extends Phaser.Scene {
       100,
       0xe6e6e6
     );
+
+    this.skillDescription = this.add.text(
+      40,
+      GAME_HEIGHT - 22,
+      `--------------------`
+    );
+    this.skillDescription.setFontSize("20px");
+    this.skillDescription.setFontStyle("bold");
+    this.skillDescription.setColor("black");
   }
 
   drawSkills() {
