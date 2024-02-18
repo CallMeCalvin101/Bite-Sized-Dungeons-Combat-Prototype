@@ -11,9 +11,8 @@ export class Combat2 extends Phaser.Scene {
   skillDescription: Phaser.GameObjects.Text | null;
   allies: Player[];
   enemy: Enemy | null;
-  system = {
-    isTargetingAlly: false,
-  };
+
+  dimUI: Phaser.GameObjects.Rectangle | null;
 
   constructor() {
     super("Combat2");
@@ -23,13 +22,14 @@ export class Combat2 extends Phaser.Scene {
     this.skillDescription = null;
     this.allies = [];
     this.enemy = null;
+    this.dimUI = null;
   }
 
   preload() {}
 
   create() {
     this.drawBackground();
-    this.drawUI();
+    this.initializeUI();
     this.initializePlayer();
     this.initializeAllies();
     this.enemy = new Enemy(this, 750);
@@ -41,6 +41,7 @@ export class Combat2 extends Phaser.Scene {
     this.drawSkills();
     this.player?.actionbar.update();
     this.enemy?.updateAction(this.allies);
+    this.drawUI();
 
     if (!this.player?.isAlive() || this.enemy!.health() <= 0) {
       this.endGame();
@@ -137,6 +138,15 @@ export class Combat2 extends Phaser.Scene {
         this.allies
       )
     );
+
+    this.dimUI = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT - 50,
+      GAME_WIDTH,
+      100,
+      0x000000,
+      0.2
+    );
   }
 
   drawBackground() {
@@ -160,7 +170,7 @@ export class Combat2 extends Phaser.Scene {
     }
   }
 
-  drawUI() {
+  initializeUI() {
     this.add.rectangle(
       GAME_WIDTH / 2,
       GAME_HEIGHT - 50,
@@ -169,11 +179,7 @@ export class Combat2 extends Phaser.Scene {
       0xe6e6e6
     );
 
-    this.skillDescription = this.add.text(
-      40,
-      GAME_HEIGHT - 22,
-      `--------------------`
-    );
+    this.skillDescription = this.add.text(40, GAME_HEIGHT - 22, ``);
     this.skillDescription.setFontSize("20px");
     this.skillDescription.setFontStyle("bold");
     this.skillDescription.setColor("black");
@@ -182,6 +188,15 @@ export class Combat2 extends Phaser.Scene {
   drawSkills() {
     for (const action of this.player?.actions!) {
       action.draw();
+    }
+  }
+
+  drawUI() {
+    if (this.player?.canAct()) {
+      this.dimUI!.alpha = 0;
+      console.log(true);
+    } else {
+      this.dimUI!.alpha = 1;
     }
   }
 

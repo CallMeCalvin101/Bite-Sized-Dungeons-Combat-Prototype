@@ -7,6 +7,8 @@ const GAME_HEIGHT = 720;
 const BUTTON_WIDTH = 200;
 const BUTTON_HEIGHT = 50;
 
+const ALLY_TARGET_COLOR = 0x00ff15;
+
 export class Action extends Phaser.GameObjects.Rectangle {
   cooldown: number;
   turnsPassed: number;
@@ -144,8 +146,8 @@ function addAllyTargeting(
     GAME_HEIGHT - 50,
     GAME_WIDTH,
     100,
-    0xffffff,
-    0.5
+    ALLY_TARGET_COLOR,
+    0.375
   );
 
   action.alliesHitbox.push(playerClickbox);
@@ -156,8 +158,8 @@ function addAllyTargeting(
       GAME_HEIGHT - GAME_HEIGHT / 3,
       100,
       100,
-      0xffffff,
-      0.5
+      ALLY_TARGET_COLOR,
+      0.375
     );
     action.alliesHitbox.push(allyClickbox);
   }
