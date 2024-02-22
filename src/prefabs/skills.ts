@@ -69,7 +69,7 @@ class rampage implements Skill {
   public name = "rampage";
   public type = SkillType.TargetEnemy;
   public description = "Deals 5 heavy blows to the enemy";
-  public actRate = 0.5;
+  public actRate = 0.25;
 
   effect(source: Player, target: Character) {
     const dps = modDamage(source, 10);
@@ -104,3 +104,46 @@ class armorpierce implements Skill {
 }
 
 skillList.set("armor pierce", new armorpierce());
+
+class weakeningStrike implements Skill {
+  public name = "weakening blow";
+  public type = SkillType.TargetEnemy;
+  public description = "Deals damage and reduces attack";
+  public actRate = 0.75;
+
+  effect(source: Player, target: Character) {
+    target.damage(modDamage(source, 10));
+    target.setDebuff("Attack");
+  }
+}
+
+skillList.set("weakening blow", new weakeningStrike());
+
+class empower implements Skill {
+  public name = "empower";
+  public type = SkillType.TargetAlly;
+  public description = "Increases selected ally's damage for ";
+  public actRate = 0.75;
+
+  effect(source: Player, target: Character) {
+    if (source.canAct()) {
+      target.setBuff("Attack");
+    }
+  }
+}
+
+skillList.set("empower", new empower());
+
+class drainingStrike implements Skill {
+  public name = "draining blow";
+  public type = SkillType.TargetEnemy;
+  public description = "Deals damage and reduces attack";
+  public actRate = 0.75;
+
+  effect(source: Player, target: Character) {
+    target.damage(modDamage(source, 10));
+    source.heal(modDamage(source, 30));
+  }
+}
+
+skillList.set("draining blow", new drainingStrike());

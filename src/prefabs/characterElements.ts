@@ -38,9 +38,7 @@ export class Character {
 
   damage(amount: number) {
     let dmg = amount;
-    console.log(this.curDebuff);
     if (this.hasDebuff("Defense")) {
-      console.log(dmg);
       dmg = dmg * 1.5;
     }
     this.healthbar.decreaseBar(dmg);
@@ -72,6 +70,10 @@ export class Character {
       return;
     }
     this.curBuff.set(buff, true);
+
+    setTimeout(() => {
+      this.curDebuff.set(buff, false);
+    }, 15000);
   }
 
   setDebuff(debuff: string) {
@@ -82,7 +84,7 @@ export class Character {
 
     setTimeout(() => {
       this.curDebuff.set(debuff, false);
-    }, 60000);
+    }, 15000);
   }
 
   hasDebuff(debuff: string): boolean {
@@ -191,7 +193,11 @@ export class Enemy extends Character {
     this.actionbar.decreaseBar(5);
 
     if (this.actionbar.getValue() <= 0) {
-      allyParty[this.target].damage(20);
+      if (this.hasDebuff("Attack")) {
+        allyParty[this.target].damage(10);
+      } else {
+        allyParty[this.target].damage(20);
+      }
       this.actionbar.resetBar();
       this.selectTarget(allyParty);
     }

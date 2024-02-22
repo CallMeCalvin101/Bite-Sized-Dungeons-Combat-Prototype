@@ -1,4 +1,4 @@
-import { Enemy, Player } from "../prefabs/characterElements";
+import { Enemy, Player, Character } from "../prefabs/characterElements";
 import { TargetAllyAction, TargetEnemyAction } from "../prefabs/actions";
 import { skillList } from "../prefabs/skills";
 
@@ -13,7 +13,9 @@ export class Combat2 extends Phaser.Scene {
   enemy: Enemy | null;
 
   dimUI: Phaser.GameObjects.Rectangle | null;
-  enemyDebuffStatus: Phaser.GameObjects.Text | null;
+  enemyDefenseStatus: Phaser.GameObjects.Text | null;
+  enemyAttackStatus: Phaser.GameObjects.Text | null;
+  allyBuffStatus: Phaser.GameObjects.Text | null;
 
   constructor() {
     super("Combat2");
@@ -24,7 +26,9 @@ export class Combat2 extends Phaser.Scene {
     this.allies = [];
     this.enemy = null;
     this.dimUI = null;
-    this.enemyDebuffStatus = null;
+    this.enemyDefenseStatus = null;
+    this.enemyAttackStatus = null;
+    this.allyBuffStatus = null;
   }
 
   preload() {}
@@ -34,12 +38,34 @@ export class Combat2 extends Phaser.Scene {
     this.initializeUI();
     this.initializePlayer();
     this.initializeAllies();
-    this.enemy = new Enemy(this, 750);
+    this.enemy = new Enemy(this, 2000);
 
-    this.enemyDebuffStatus = this.add.text(GAME_WIDTH / 2 - 48, 60, `DEF DOWN`);
-    this.enemyDebuffStatus.setFontSize("20px");
-    this.enemyDebuffStatus.setFontStyle("bold");
-    this.enemyDebuffStatus.setColor("black");
+    this.enemyDefenseStatus = this.add.text(
+      GAME_WIDTH / 2 - 48 + 72,
+      60,
+      `DEF DOWN`
+    );
+    this.enemyDefenseStatus.setFontSize("20px");
+    this.enemyDefenseStatus.setFontStyle("bold");
+    this.enemyDefenseStatus.setColor("black");
+
+    this.enemyAttackStatus = this.add.text(
+      GAME_WIDTH / 2 - 48 - 72,
+      60,
+      `ATK DOWN`
+    );
+    this.enemyAttackStatus.setFontSize("20px");
+    this.enemyAttackStatus.setFontStyle("bold");
+    this.enemyAttackStatus.setColor("black");
+
+    this.allyBuffStatus = this.add.text(
+      GAME_WIDTH / 2 - 48,
+      GAME_HEIGHT - 100 - 32,
+      `ATK UP`
+    );
+    this.allyBuffStatus.setFontSize("20px");
+    this.allyBuffStatus.setFontStyle("bold");
+    this.allyBuffStatus.setColor("black");
 
     this.initializeActions();
   }
@@ -49,12 +75,25 @@ export class Combat2 extends Phaser.Scene {
     this.drawSkills();
     this.player?.actionbar.update();
     this.enemy?.updateAction(this.allies);
+    this.simulateAllies();
     this.drawUI();
 
     if (this.enemy?.hasDebuff("Defense")) {
-      this.enemyDebuffStatus!.alpha = 1;
+      this.enemyDefenseStatus!.alpha = 1;
     } else {
-      this.enemyDebuffStatus!.alpha = 0;
+      this.enemyDefenseStatus!.alpha = 0;
+    }
+
+    if (this.enemy?.hasDebuff("Attack")) {
+      this.enemyAttackStatus!.alpha = 1;
+    } else {
+      this.enemyAttackStatus!.alpha = 0;
+    }
+
+    if (this.player?.hasBuff("Attack")) {
+      this.allyBuffStatus!.alpha = 1;
+    } else {
+      this.allyBuffStatus!.alpha = 0;
     }
 
     if (!this.player?.isAlive() || this.enemy!.health() <= 0) {
@@ -128,6 +167,7 @@ export class Combat2 extends Phaser.Scene {
       )
     );
 
+    /*
     this.player?.addAction(
       new TargetEnemyAction(
         this,
@@ -139,7 +179,7 @@ export class Combat2 extends Phaser.Scene {
         this.enemy!,
         5
       )
-    );
+    );*/
 
     this.player?.addAction(
       new TargetAllyAction(
@@ -160,17 +200,17 @@ export class Combat2 extends Phaser.Scene {
         (GAME_WIDTH * 3) / 5,
         GAME_HEIGHT - 60,
         this.player,
-        skillList.get(`armor pierce`)!,
-        this.enemy!
+        skillList.get(`draining blow`)!,
+        this.enemy!,
+        6
       )
     );
 
-    /*
     this.player?.addAction(
       new TargetEnemyAction(
         this,
         this.skillDescription!,
-        GAME_WIDTH / 2,
+        (4 * GAME_WIDTH) / 5,
         GAME_HEIGHT - 60,
         this.player,
         skillList.get(`rampage`)!,
@@ -178,7 +218,6 @@ export class Combat2 extends Phaser.Scene {
         7
       )
     );
-    */
 
     this.dimUI = this.add.rectangle(
       GAME_WIDTH / 2,
@@ -242,5 +281,36 @@ export class Combat2 extends Phaser.Scene {
 
   endGame() {
     this.scene.start("End");
+  }
+
+  simulateAllies() {
+    for (let i = 1; i < 4; i++) {
+      const ally = this.allies[i];
+      if (ally.isAlive() && ally.canAct()) {
+        const actChance = Math.random();
+        if (actChance < 0.05) {
+          skillList.get("empower")?.effect(ally, this.player as Character);
+          ally.setActRate(skillList.get("empower")!.actRate);
+        } else if (actChance < 0.1) {
+          skillList.get("armor pierce")?.effect(ally, this.enemy as Character);
+          ally.setActRate(skillList.get("armor pierce")!.actRate);
+        } else if (actChance < 0.15) {
+          skillList
+            .get("weakening blow")
+            ?.effect(ally, this.enemy as Character);
+          ally.setActRate(skillList.get("weakening blow")!.actRate);
+        } else if (actChance < 0.2) {
+          skillList.get("dual strikes")?.effect(ally, this.enemy as Character);
+          ally.setActRate(skillList.get("dual strikes")!.actRate);
+        } else {
+          skillList.get("attack")?.effect(ally, this.enemy as Character);
+          ally.setActRate(skillList.get("attack")!.actRate);
+        }
+
+        ally.resetAction();
+      }
+
+      ally.actionbar.update();
+    }
   }
 }
