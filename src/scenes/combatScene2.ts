@@ -13,6 +13,7 @@ export class Combat2 extends Phaser.Scene {
   enemy: Enemy | null;
 
   dimUI: Phaser.GameObjects.Rectangle | null;
+  enemyDebuffStatus: Phaser.GameObjects.Text | null;
 
   constructor() {
     super("Combat2");
@@ -23,6 +24,7 @@ export class Combat2 extends Phaser.Scene {
     this.allies = [];
     this.enemy = null;
     this.dimUI = null;
+    this.enemyDebuffStatus = null;
   }
 
   preload() {}
@@ -33,6 +35,12 @@ export class Combat2 extends Phaser.Scene {
     this.initializePlayer();
     this.initializeAllies();
     this.enemy = new Enemy(this, 750);
+
+    this.enemyDebuffStatus = this.add.text(GAME_WIDTH / 2 - 48, 60, `DEF DOWN`);
+    this.enemyDebuffStatus.setFontSize("20px");
+    this.enemyDebuffStatus.setFontStyle("bold");
+    this.enemyDebuffStatus.setColor("black");
+
     this.initializeActions();
   }
 
@@ -42,6 +50,12 @@ export class Combat2 extends Phaser.Scene {
     this.player?.actionbar.update();
     this.enemy?.updateAction(this.allies);
     this.drawUI();
+
+    if (this.enemy?.hasDebuff("Defense")) {
+      this.enemyDebuffStatus!.alpha = 1;
+    } else {
+      this.enemyDebuffStatus!.alpha = 0;
+    }
 
     if (!this.player?.isAlive() || this.enemy!.health() <= 0) {
       this.endGame();
@@ -106,7 +120,7 @@ export class Combat2 extends Phaser.Scene {
       new TargetEnemyAction(
         this,
         this.skillDescription!,
-        GAME_WIDTH / 4,
+        GAME_WIDTH / 5,
         GAME_HEIGHT - 60,
         this.player,
         skillList.get(`attack`)!,
@@ -118,7 +132,7 @@ export class Combat2 extends Phaser.Scene {
       new TargetEnemyAction(
         this,
         this.skillDescription!,
-        (3 * GAME_WIDTH) / 4,
+        (4 * GAME_WIDTH) / 5,
         GAME_HEIGHT - 60,
         this.player,
         skillList.get(`dual strikes`)!,
@@ -131,11 +145,23 @@ export class Combat2 extends Phaser.Scene {
       new TargetAllyAction(
         this,
         this.skillDescription!,
-        GAME_WIDTH / 2,
+        (GAME_WIDTH * 2) / 5,
         GAME_HEIGHT - 60,
         this.player,
         skillList.get(`heal`)!,
         this.allies
+      )
+    );
+
+    this.player?.addAction(
+      new TargetEnemyAction(
+        this,
+        this.skillDescription!,
+        (GAME_WIDTH * 3) / 5,
+        GAME_HEIGHT - 60,
+        this.player,
+        skillList.get(`armor pierce`)!,
+        this.enemy!
       )
     );
 
@@ -209,7 +235,6 @@ export class Combat2 extends Phaser.Scene {
   drawUI() {
     if (this.player?.canAct()) {
       this.dimUI!.alpha = 0;
-      console.log(true);
     } else {
       this.dimUI!.alpha = 1;
     }

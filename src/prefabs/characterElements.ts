@@ -28,7 +28,7 @@ export class Character {
 
     for (const type of BuffType) {
       this.curBuff.set(type, false);
-      this.curBuff.set(type, false);
+      this.curDebuff.set(type, false);
     }
   }
 
@@ -37,7 +37,13 @@ export class Character {
   }
 
   damage(amount: number) {
-    this.healthbar.decreaseBar(amount);
+    let dmg = amount;
+    console.log(this.curDebuff);
+    if (this.hasDebuff("Defense")) {
+      console.log(dmg);
+      dmg = dmg * 1.5;
+    }
+    this.healthbar.decreaseBar(dmg);
   }
 
   heal(amount: number) {
@@ -73,6 +79,17 @@ export class Character {
       return;
     }
     this.curDebuff.set(debuff, true);
+
+    setTimeout(() => {
+      this.curDebuff.set(debuff, false);
+    }, 60000);
+  }
+
+  hasDebuff(debuff: string): boolean {
+    if (!this.curDebuff.has(debuff)) {
+      return false;
+    }
+    return this.curDebuff.get(debuff)!;
   }
 
   draw() {

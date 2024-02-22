@@ -90,3 +90,17 @@ class rampage implements Skill {
 }
 
 skillList.set("rampage", new rampage());
+
+class armorpierce implements Skill {
+  public name = "armor pierce";
+  public type = SkillType.TargetEnemy;
+  public description = "Deals damage and reduces defense";
+  public actRate = 0.75;
+
+  effect(source: Player, target: Character) {
+    target.damage(modDamage(source, 10));
+    target.setDebuff("Defense");
+  }
+}
+
+skillList.set("armor pierce", new armorpierce());

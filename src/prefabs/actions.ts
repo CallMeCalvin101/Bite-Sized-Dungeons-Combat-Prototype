@@ -182,3 +182,37 @@ function addAllyTargeting(
     action.destroyAllBoxes();
   });
 }
+
+export class AllAllyAction extends Action {
+  alliesHitbox: Phaser.GameObjects.Rectangle[];
+  party: Player[];
+  constructor(
+    scene: Phaser.Scene,
+    description: Phaser.GameObjects.Text,
+    x: number,
+    y: number,
+    player: Player,
+    skill: Skill,
+    party: Player[],
+    cd = 0
+  ) {
+    super(scene, description, x, y, player, skill, cd);
+    this.party = party;
+    this.alliesHitbox = [];
+
+    this.on("pointerdown", () => {
+      if (this.cooldown - this.turnsPassed <= 0 && this.player.canAct()) {
+        this.on("pointerdown", () => {
+          if (this.cooldown - this.turnsPassed <= 0 && this.player.canAct()) {
+            for (const ally of party) {
+              this.skill.effect(this.player, ally);
+            }
+            this.turnsPassed = 0;
+            this.player!.setActRate(this.skill.actRate);
+            this.player.passTurns();
+          }
+        });
+      }
+    });
+  }
+}
