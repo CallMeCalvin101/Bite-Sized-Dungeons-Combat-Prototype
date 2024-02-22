@@ -139,6 +139,21 @@ export class Combat2 extends Phaser.Scene {
       )
     );
 
+    /*
+    this.player?.addAction(
+      new TargetEnemyAction(
+        this,
+        this.skillDescription!,
+        GAME_WIDTH / 2,
+        GAME_HEIGHT - 60,
+        this.player,
+        skillList.get(`rampage`)!,
+        this.enemy!,
+        7
+      )
+    );
+    */
+
     this.dimUI = this.add.rectangle(
       GAME_WIDTH / 2,
       GAME_HEIGHT - 50,

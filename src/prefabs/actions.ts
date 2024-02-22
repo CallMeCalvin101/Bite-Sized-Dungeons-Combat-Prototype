@@ -1,5 +1,5 @@
 import { Skill } from "./skills";
-import { Player, Enemy, HealthBar } from "./characterElements";
+import { Player, Enemy, Character } from "./characterElements";
 
 const GAME_WIDTH = 1280;
 const GAME_HEIGHT = 720;
@@ -78,7 +78,7 @@ export class TargetEnemyAction extends Action {
 
     this.on("pointerdown", () => {
       if (this.cooldown - this.turnsPassed <= 0 && this.player.canAct()) {
-        this.skill.effect(this.enemy.healthbar);
+        this.skill.effect(this.player, this.enemy);
         this.turnsPassed = 0;
         this.player!.setActRate(this.skill.actRate);
         this.player.passTurns();
@@ -110,7 +110,7 @@ export class TargetAllyAction extends Action {
 
     this.on("pointerdown", () => {
       if (this.cooldown - this.turnsPassed <= 0 && this.player.canAct()) {
-        addAllyTargeting(scene, this, this.skill.effect);
+        addAllyTargeting(scene, this, player, this.skill.effect);
       }
     });
   }
@@ -126,7 +126,8 @@ export class TargetAllyAction extends Action {
 function addAllyTargeting(
   scene: Phaser.Scene,
   action: TargetAllyAction,
-  fn: (healthbar: HealthBar) => void
+  source: Player,
+  fn: (start: Player, target: Character) => void
 ) {
   // Draws invisable box for player to click and exit the command
   const removeTargetClickBox = scene.add.rectangle(
@@ -168,7 +169,7 @@ function addAllyTargeting(
   for (let i = 0; i < action.party.length; i++) {
     action.alliesHitbox[i + 1].setInteractive();
     action.alliesHitbox[i + 1].on("pointerdown", () => {
-      fn(action.party[i]!.healthbar);
+      fn(source, action.party[i]!);
       action.turnsPassed = 0;
       action.player!.setActRate(action.skill.actRate);
       action.player.passTurns();

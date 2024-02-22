@@ -3,9 +3,13 @@ import { Action } from "./actions";
 const GAME_WIDTH = 1280;
 // const GAME_HEIGHT = 720;
 
-class Character {
+const BuffType = ["Attack", "Defense", "Speed"];
+
+export class Character {
   healthbar: HealthBar;
   actionbar: ActionBar;
+  curBuff: Map<string, boolean>;
+  curDebuff: Map<string, boolean>;
 
   constructor(
     scene: Phaser.Scene,
@@ -19,6 +23,13 @@ class Character {
   ) {
     this.healthbar = new HealthBar(scene, x, y - h1 / 2, w, h1, v1);
     this.actionbar = new ActionBar(scene, x, y + h2 / 2, w, h2, v2);
+    this.curBuff = new Map();
+    this.curDebuff = new Map();
+
+    for (const type of BuffType) {
+      this.curBuff.set(type, false);
+      this.curBuff.set(type, false);
+    }
   }
 
   health(): number {
@@ -29,6 +40,10 @@ class Character {
     this.healthbar.decreaseBar(amount);
   }
 
+  heal(amount: number) {
+    this.healthbar.increaseBar(amount);
+  }
+
   setPosition(xPos: number, yPos: number) {
     const h1 = this.healthbar.background.height;
     const h2 = this.actionbar.background.height;
@@ -37,6 +52,27 @@ class Character {
     this.healthbar.valueBar.setPosition(xPos, yPos - h1 / 2);
     this.actionbar.background.setPosition(xPos, yPos + h2 / 2);
     this.actionbar.valueBar.setPosition(xPos, yPos + h2 / 2);
+  }
+
+  hasBuff(buff: string): boolean {
+    if (!this.curBuff.has(buff)) {
+      return false;
+    }
+    return this.curBuff.get(buff)!;
+  }
+
+  setBuff(buff: string) {
+    if (!this.curBuff.has(buff)) {
+      return;
+    }
+    this.curBuff.set(buff, true);
+  }
+
+  setDebuff(debuff: string) {
+    if (!this.curDebuff.has(debuff)) {
+      return;
+    }
+    this.curDebuff.set(debuff, true);
   }
 
   draw() {
