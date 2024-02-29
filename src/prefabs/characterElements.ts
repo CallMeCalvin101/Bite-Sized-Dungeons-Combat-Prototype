@@ -147,10 +147,11 @@ export class Player extends Character {
 export class Enemy extends Character {
   target: number;
   targetText: Phaser.GameObjects.Text;
+  enemyLabel: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, maxHealth: number) {
-    super(scene, GAME_WIDTH / 2, 60, 750, 40, maxHealth, 20, maxHealth);
-    const enemy = scene.add.image(GAME_WIDTH / 2, 200, "dragon");
+    super(scene, GAME_WIDTH / 2, 60, 750, 30, maxHealth, 30, maxHealth);
+    const enemy = scene.add.image(GAME_WIDTH / 2, 224, "dragon");
     enemy.setScale(0.5);
 
     this.target = Math.floor(4 * Math.random());
@@ -158,12 +159,24 @@ export class Enemy extends Character {
     this.targetText = scene.add.text(
       GAME_WIDTH / 2 - 348,
       70 - 8,
-      `TARGET: ${(this.target + 1).toString()}`,
+      `Intent: Claw Attack   Target: Player ${(this.target + 1).toString()}`,
       { font: "Ariel" }
     );
 
-    this.targetText.setFontSize(18);
+    this.targetText.setFontSize(28);
     this.targetText.setColor("Black");
+    this.targetText.setFontStyle("bold");
+
+    this.enemyLabel = scene.add.text(
+      GAME_WIDTH / 2 - 348,
+      40 - 8,
+      `Enemy: Dragon`,
+      { font: "Ariel" }
+    );
+
+    this.enemyLabel.setFontSize(28);
+    this.enemyLabel.setColor("Black");
+    this.enemyLabel.setFontStyle("bold");
   }
 
   selectTarget(allyParty: Player[], target: number = -1) {
@@ -205,7 +218,9 @@ export class Enemy extends Character {
 
   draw() {
     super.draw();
-    this.targetText.setText(`TARGET: ${(this.target + 1).toString()}`);
+    this.targetText.setText(
+      `Intent: Claw Attack   Target: Player ${(this.target + 1).toString()}`
+    );
   }
 }
 

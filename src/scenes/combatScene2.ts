@@ -16,6 +16,7 @@ export class Combat2 extends Phaser.Scene {
   enemyDefenseStatus: Phaser.GameObjects.Text | null;
   enemyAttackStatus: Phaser.GameObjects.Text | null;
   allyBuffStatus: Phaser.GameObjects.Text | null;
+  allyActionStatus: Phaser.GameObjects.Text[];
 
   constructor() {
     super("Combat2");
@@ -29,6 +30,7 @@ export class Combat2 extends Phaser.Scene {
     this.enemyDefenseStatus = null;
     this.enemyAttackStatus = null;
     this.allyBuffStatus = null;
+    this.allyActionStatus = [];
   }
 
   preload() {}
@@ -40,31 +42,29 @@ export class Combat2 extends Phaser.Scene {
     this.initializeAllies();
     this.enemy = new Enemy(this, 2000);
 
+    const status = this.add.text(GAME_WIDTH / 2 + 20, 92, "Status:");
+    status.setFontSize("28px");
+    status.setColor("black");
+    status.setFontStyle("bold");
+
     this.enemyDefenseStatus = this.add.text(
-      GAME_WIDTH / 2 - 48 + 72,
-      60,
-      `DEF DOWN`
+      GAME_WIDTH / 2 + 144 + 96,
+      92,
+      `🛡️⬇️`
     );
-    this.enemyDefenseStatus.setFontSize("20px");
-    this.enemyDefenseStatus.setFontStyle("bold");
+    this.enemyDefenseStatus.setFontSize("28px");
     this.enemyDefenseStatus.setColor("black");
 
-    this.enemyAttackStatus = this.add.text(
-      GAME_WIDTH / 2 - 48 - 72,
-      60,
-      `ATK DOWN`
-    );
-    this.enemyAttackStatus.setFontSize("20px");
-    this.enemyAttackStatus.setFontStyle("bold");
+    this.enemyAttackStatus = this.add.text(GAME_WIDTH / 2 + 144, 92, `⚔️⬇️`);
+    this.enemyAttackStatus.setFontSize("28px");
     this.enemyAttackStatus.setColor("black");
 
     this.allyBuffStatus = this.add.text(
       GAME_WIDTH / 2 - 48,
-      GAME_HEIGHT - 100 - 32,
-      `ATK UP`
+      GAME_HEIGHT - 100 - 58,
+      `⚔️⬆️`
     );
-    this.allyBuffStatus.setFontSize("20px");
-    this.allyBuffStatus.setFontStyle("bold");
+    this.allyBuffStatus.setFontSize("28px");
     this.allyBuffStatus.setColor("black");
 
     this.initializeActions();
@@ -96,6 +96,15 @@ export class Combat2 extends Phaser.Scene {
       this.allyBuffStatus!.alpha = 0;
     }
 
+    if (!this.player?.canAct()) {
+      this.skillDescription?.setText("Waiting...");
+    } else if (
+      this.player?.canAct() &&
+      this.skillDescription?.text == "Waiting..."
+    ) {
+      this.skillDescription?.setText("Ready to Act");
+    }
+
     if (!this.player?.isAlive() || this.enemy!.health() <= 0) {
       this.endGame();
     }
@@ -105,11 +114,11 @@ export class Combat2 extends Phaser.Scene {
     this.player = new Player(
       this,
       GAME_WIDTH / 2,
-      GAME_HEIGHT - 10 - 100,
+      GAME_HEIGHT - 30 - 100,
       GAME_WIDTH,
       30,
       100,
-      10,
+      30,
       100
     );
     this.allies.push(this.player);
@@ -117,12 +126,19 @@ export class Combat2 extends Phaser.Scene {
 
     this.playerHealthText = this.add.text(
       40,
-      GAME_HEIGHT - 10 - 100 - 22,
-      `${this.player.health()}/${this.player.healthbar.maxValue}`
+      GAME_HEIGHT - 58 - 100,
+      `Your (Player 1) Health: ${this.player.health()}/${
+        this.player.healthbar.maxValue
+      }   Status:`
     );
-    this.playerHealthText.setFontSize("20px");
+    this.playerHealthText.setFontSize("28px");
     this.playerHealthText.setFontStyle("bold");
     this.playerHealthText.setColor("black");
+
+    this.skillDescription = this.add.text(40, GAME_HEIGHT - 100 - 26, ``);
+    this.skillDescription.setFontSize("28px");
+    this.skillDescription.setFontStyle("bold");
+    this.skillDescription.setColor("black");
   }
 
   initializeAllies() {
@@ -149,23 +165,40 @@ export class Combat2 extends Phaser.Scene {
       );
       text.setFontSize(128);
       text.setColor("black");
+
+      const action = this.add.text(
+        (GAME_WIDTH * i) / 4 - 20,
+        GAME_HEIGHT / 2 - 10,
+        `👊`
+      );
+      action.setFontSize(28);
+      action.setColor("black");
+      action.setFontStyle("bold");
+      action.alpha = 0;
+      this.allyActionStatus.push(action);
     }
 
     console.log(this.allies.length);
   }
 
   initializeActions() {
-    this.player?.addAction(
-      new TargetEnemyAction(
-        this,
-        this.skillDescription!,
-        GAME_WIDTH / 5,
-        GAME_HEIGHT - 60,
-        this.player,
-        skillList.get(`attack`)!,
-        this.enemy!
-      )
+    const playBasicAttack = new TargetEnemyAction(
+      this,
+      this.skillDescription!,
+      GAME_WIDTH / 5,
+      GAME_HEIGHT - 60,
+      this.player!,
+      skillList.get(`attack`)!,
+      this.enemy!
     );
+
+    playBasicAttack.on("pointerdown", () => {
+      if (playBasicAttack.isUsable()) {
+        this.simulateHit();
+      }
+    });
+
+    this.player?.addAction(playBasicAttack);
 
     /*
     this.player?.addAction(
@@ -193,31 +226,55 @@ export class Combat2 extends Phaser.Scene {
       )
     );
 
-    this.player?.addAction(
-      new TargetEnemyAction(
-        this,
-        this.skillDescription!,
-        (GAME_WIDTH * 3) / 5,
-        GAME_HEIGHT - 60,
-        this.player,
-        skillList.get(`draining blow`)!,
-        this.enemy!,
-        6
-      )
+    const playDrainBlow = new TargetEnemyAction(
+      this,
+      this.skillDescription!,
+      (GAME_WIDTH * 3) / 5,
+      GAME_HEIGHT - 60,
+      this.player!,
+      skillList.get(`draining blow`)!,
+      this.enemy!,
+      6
     );
 
-    this.player?.addAction(
-      new TargetEnemyAction(
-        this,
-        this.skillDescription!,
-        (4 * GAME_WIDTH) / 5,
-        GAME_HEIGHT - 60,
-        this.player,
-        skillList.get(`rampage`)!,
-        this.enemy!,
-        7
-      )
+    playDrainBlow.on("pointerdown", () => {
+      if (playDrainBlow.isUsable()) {
+        this.simulateHit();
+      }
+    });
+
+    this.player?.addAction(playDrainBlow);
+
+    const playRampage = new TargetEnemyAction(
+      this,
+      this.skillDescription!,
+      (4 * GAME_WIDTH) / 5,
+      GAME_HEIGHT - 60,
+      this.player!,
+      skillList.get(`rampage`)!,
+      this.enemy!,
+      7
     );
+
+    playRampage.on("pointerdown", () => {
+      if (playRampage.isUsable()) {
+        this.simulateHit();
+        setTimeout(() => {
+          this.simulateHit();
+        }, 100);
+        setTimeout(() => {
+          this.simulateHit();
+        }, 200);
+        setTimeout(() => {
+          this.simulateHit();
+        }, 300);
+        setTimeout(() => {
+          this.simulateHit();
+        }, 400);
+      }
+    });
+
+    this.player?.addAction(playRampage);
 
     this.dimUI = this.add.rectangle(
       GAME_WIDTH / 2,
@@ -243,7 +300,9 @@ export class Combat2 extends Phaser.Scene {
     this.enemy?.draw();
     this.player?.draw();
     this.playerHealthText?.setText(
-      `${this.player!.health()}/${this.player!.healthbar.maxValue}`
+      `Your Health: ${this.player!.health()}/${
+        this.player!.healthbar.maxValue
+      }   Status:`
     );
     for (const ally of this.allies) {
       ally.draw();
@@ -258,11 +317,6 @@ export class Combat2 extends Phaser.Scene {
       100,
       0xe6e6e6
     );
-
-    this.skillDescription = this.add.text(40, GAME_HEIGHT - 22, ``);
-    this.skillDescription.setFontSize("20px");
-    this.skillDescription.setFontStyle("bold");
-    this.skillDescription.setColor("black");
   }
 
   drawSkills() {
@@ -286,31 +340,57 @@ export class Combat2 extends Phaser.Scene {
   simulateAllies() {
     for (let i = 1; i < 4; i++) {
       const ally = this.allies[i];
+      const action = this.allyActionStatus[i - 1];
       if (ally.isAlive() && ally.canAct()) {
         const actChance = Math.random();
         if (actChance < 0.05) {
           skillList.get("empower")?.effect(ally, this.player as Character);
           ally.setActRate(skillList.get("empower")!.actRate);
+          action.setText("⚔️⬆️")
         } else if (actChance < 0.1) {
           skillList.get("armor pierce")?.effect(ally, this.enemy as Character);
           ally.setActRate(skillList.get("armor pierce")!.actRate);
+          action.setText("🛡️⬇️")
         } else if (actChance < 0.15) {
           skillList
             .get("weakening blow")
             ?.effect(ally, this.enemy as Character);
           ally.setActRate(skillList.get("weakening blow")!.actRate);
+          action.setText("⚔️⬇️")
         } else if (actChance < 0.2) {
           skillList.get("dual strikes")?.effect(ally, this.enemy as Character);
           ally.setActRate(skillList.get("dual strikes")!.actRate);
+          action.setText("🤺")
         } else {
           skillList.get("attack")?.effect(ally, this.enemy as Character);
           ally.setActRate(skillList.get("attack")!.actRate);
+          action.setText("👊")
         }
 
         ally.resetAction();
+
+        action.alpha = 1;
+        setTimeout(() => {
+          action.alpha = 0;
+        }, 200);
       }
 
       ally.actionbar.update();
     }
+  }
+
+  simulateHit() {
+    const randX = 200 * Math.random();
+    const randY = 200 * Math.random();
+    const hitMarker = this.add.text(
+      randX + GAME_WIDTH / 2 - 100,
+      randY + 224 - 100,
+      "👊"
+    );
+    hitMarker.setFontSize("32px");
+
+    setTimeout(() => {
+      hitMarker.destroy();
+    }, 200);
   }
 }

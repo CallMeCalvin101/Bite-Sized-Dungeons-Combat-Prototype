@@ -68,7 +68,7 @@ skillList.set("dual strikes", new dualStrikes());
 class rampage implements Skill {
   public name = "rampage";
   public type = SkillType.TargetEnemy;
-  public description = "Deals 5 heavy blows to the enemy";
+  public description = "Deals 5 heavy blows to the enemy (Reuse Cooldown: 6)";
   public actRate = 0.25;
 
   effect(source: Player, target: Character) {
@@ -137,7 +137,8 @@ skillList.set("empower", new empower());
 class drainingStrike implements Skill {
   public name = "draining blow";
   public type = SkillType.TargetEnemy;
-  public description = "Deals damage and reduces attack";
+  public description =
+    "Deals damage and heals the user simultaneously (Reuse Cooldown: 5)";
   public actRate = 0.75;
 
   effect(source: Player, target: Character) {

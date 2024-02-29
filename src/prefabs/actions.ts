@@ -33,7 +33,9 @@ export class Action extends Phaser.GameObjects.Rectangle {
     this.setInteractive();
 
     this.on("pointerover", () => {
-      description.setText(this.skill.description);
+      if (this.player.canAct()) {
+        description.setText(this.skill.description);
+      }
     });
 
     const text = new Phaser.GameObjects.Text(
@@ -58,6 +60,13 @@ export class Action extends Phaser.GameObjects.Rectangle {
       this.setFillStyle(0x888888);
     }
   }
+
+  isUsable(): boolean {
+    if (this.cooldown - this.turnsPassed <= 0 && this.player.canAct()) {
+      return true;
+    }
+    return false;
+  }
 }
 
 export class TargetEnemyAction extends Action {
@@ -79,9 +88,12 @@ export class TargetEnemyAction extends Action {
     this.on("pointerdown", () => {
       if (this.cooldown - this.turnsPassed <= 0 && this.player.canAct()) {
         this.skill.effect(this.player, this.enemy);
-        this.turnsPassed = 0;
         this.player!.setActRate(this.skill.actRate);
-        this.player.passTurns();
+        //JANK TIMEOUT TO FIX LATER
+        setTimeout(() => {
+          this.player.passTurns();
+          this.turnsPassed = 0;
+        }, 10);
       }
     });
   }
@@ -111,6 +123,9 @@ export class TargetAllyAction extends Action {
     this.on("pointerdown", () => {
       if (this.cooldown - this.turnsPassed <= 0 && this.player.canAct()) {
         addAllyTargeting(scene, this, player, this.skill.effect);
+        description.setText(
+          "Click on any green box to use skill on ally, click elsewhere to cancel"
+        );
       }
     });
   }
