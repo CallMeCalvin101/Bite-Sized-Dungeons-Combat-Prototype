@@ -372,7 +372,7 @@ export class Combat2 extends Phaser.Scene {
         action.alpha = 1;
         setTimeout(() => {
           action.alpha = 0;
-        }, 200);
+        }, 500);
       }
 
       ally.actionbar.update();
@@ -387,7 +387,7 @@ export class Combat2 extends Phaser.Scene {
       randY + 224 - 100,
       "👊"
     );
-    hitMarker.setFontSize("32px");
+    hitMarker.setFontSize("60px");
 
     setTimeout(() => {
       hitMarker.destroy();
