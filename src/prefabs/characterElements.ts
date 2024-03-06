@@ -146,6 +146,7 @@ export class Player extends Character {
 }
 export class Enemy extends Character {
   target: number;
+  curAction: number;
   targetText: Phaser.GameObjects.Text;
   enemyLabel: Phaser.GameObjects.Text;
 
@@ -155,6 +156,7 @@ export class Enemy extends Character {
     enemy.setScale(0.5);
 
     this.target = Math.floor(4 * Math.random());
+    this.curAction = 0;
 
     this.targetText = scene.add.text(
       GAME_WIDTH / 2 - 348,
@@ -200,26 +202,61 @@ export class Enemy extends Character {
     while (!allyParty[this.target].isAlive()) {
       this.target = Math.floor(Math.random() * 4);
     }
+
+    const selector = Math.floor(Math.random() * 10);
+    if (selector < 2) {
+      this.curAction = 1;
+    } else if (selector < 3) {
+      this.curAction = 2;
+    } else {
+      this.curAction = 0;
+    }
   }
 
   updateAction(allyParty: Player[]) {
     this.actionbar.decreaseBar(5);
 
-    if (this.actionbar.getValue() <= 0) {
-      if (this.hasDebuff("Attack")) {
-        allyParty[this.target].damage(10);
-      } else {
-        allyParty[this.target].damage(20);
+    if (this.curAction == 0) {
+      if (this.actionbar.getValue() <= 0) {
+        if (this.hasDebuff("Attack")) {
+          allyParty[this.target].damage(20);
+        } else {
+          allyParty[this.target].damage(40);
+        }
+        this.actionbar.resetBar();
+        this.selectTarget(allyParty);
       }
-      this.actionbar.resetBar();
-      this.selectTarget(allyParty);
+    } else if (this.curAction == 1) {
+      if (this.actionbar.getValue() <= 0) {
+        for (const ally of allyParty) {
+          ally.damage(20);
+        }
+        this.actionbar.resetBar();
+        this.selectTarget(allyParty);
+      }
+    } else if (this.curAction == 2) {
+      if (this.actionbar.getValue() <= 0) {
+        if (this.hasDebuff("Attack")) {
+          allyParty[this.target].damage(40);
+        } else {
+          allyParty[this.target].damage(80);
+        }
+        this.actionbar.resetBar();
+        this.selectTarget(allyParty);
+      }
     }
   }
 
   draw() {
     super.draw();
+    let intent = "Claw Attack";
+    if (this.curAction == 1) {
+      intent = "Firebreath";
+    } else if (this.curAction == 2) {
+      intent = "Rip & Tear";
+    }
     this.targetText.setText(
-      `Intent: Claw Attack   Target: Player ${(this.target + 1).toString()}`
+      `Intent: ${intent}   Target: Player ${(this.target + 1).toString()}`
     );
   }
 }
