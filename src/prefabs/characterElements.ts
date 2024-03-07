@@ -219,9 +219,9 @@ export class Enemy extends Character {
     if (this.curAction == 0) {
       if (this.actionbar.getValue() <= 0) {
         if (this.hasDebuff("Attack")) {
-          allyParty[this.target].damage(20);
+          allyParty[this.target].damage(10);
         } else {
-          allyParty[this.target].damage(40);
+          allyParty[this.target].damage(20);
         }
         this.actionbar.resetBar();
         this.selectTarget(allyParty);
@@ -229,7 +229,7 @@ export class Enemy extends Character {
     } else if (this.curAction == 1) {
       if (this.actionbar.getValue() <= 0) {
         for (const ally of allyParty) {
-          ally.damage(20);
+          ally.damage(50);
         }
         this.actionbar.resetBar();
         this.selectTarget(allyParty);

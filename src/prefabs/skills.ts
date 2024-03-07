@@ -27,7 +27,7 @@ class basicAttack implements Skill {
   public name = "attack";
   public type = SkillType.TargetEnemy;
   public description = "Small damage to the enemy";
-  public actRate = 1.5;
+  public actRate = 1.0;
 
   effect(source: Player, target: Character) {
     target.damage(modDamage(source, 5));
@@ -39,7 +39,7 @@ skillList.set("attack", new basicAttack());
 class healingSkill implements Skill {
   public name = "heal";
   public type = SkillType.TargetAlly;
-  public description = "Heals the selected ally for 50 health";
+  public description = "Heals the selected ally for 50 health (Cooldown: 1)";
   public actRate = 0.5;
 
   effect(source: Player, target: Character) {
@@ -69,10 +69,10 @@ class rampage implements Skill {
   public name = "rampage";
   public type = SkillType.TargetEnemy;
   public description = "Deals 5 heavy blows to the enemy (Reuse Cooldown: 7)";
-  public actRate = 0.25;
+  public actRate = 0.15;
 
   effect(source: Player, target: Character) {
-    const dps = modDamage(source, 10);
+    const dps = modDamage(source, 16);
     target.damage(dps);
     setTimeout(() => {
       target.damage(dps);
@@ -138,12 +138,12 @@ class drainingStrike implements Skill {
   public name = "draining blow";
   public type = SkillType.TargetEnemy;
   public description =
-    "Deals damage and heals the user simultaneously (Reuse Cooldown: 6)";
+    "Deals damage and heals the user simultaneously (Reuse Cooldown: 3)";
   public actRate = 0.75;
 
   effect(source: Player, target: Character) {
-    target.damage(modDamage(source, 10));
-    source.heal(modDamage(source, 30));
+    target.damage(modDamage(source, 20));
+    source.heal(modDamage(source, 20));
   }
 }
 

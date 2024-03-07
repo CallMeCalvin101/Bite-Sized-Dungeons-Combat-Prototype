@@ -222,7 +222,8 @@ export class Combat2 extends Phaser.Scene {
         GAME_HEIGHT - 60,
         this.player,
         skillList.get(`heal`)!,
-        this.allies
+        this.allies,
+        2
       )
     );
 
@@ -234,7 +235,7 @@ export class Combat2 extends Phaser.Scene {
       this.player!,
       skillList.get(`draining blow`)!,
       this.enemy!,
-      6
+      4
     );
 
     playDrainBlow.on("pointerdown", () => {
@@ -346,25 +347,25 @@ export class Combat2 extends Phaser.Scene {
         if (actChance < 0.05) {
           skillList.get("empower")?.effect(ally, this.player as Character);
           ally.setActRate(skillList.get("empower")!.actRate);
-          action.setText("⚔️⬆️")
+          action.setText("⚔️⬆️");
         } else if (actChance < 0.1) {
           skillList.get("armor pierce")?.effect(ally, this.enemy as Character);
           ally.setActRate(skillList.get("armor pierce")!.actRate);
-          action.setText("🛡️⬇️")
+          action.setText("🛡️⬇️");
         } else if (actChance < 0.15) {
           skillList
             .get("weakening blow")
             ?.effect(ally, this.enemy as Character);
           ally.setActRate(skillList.get("weakening blow")!.actRate);
-          action.setText("⚔️⬇️")
+          action.setText("⚔️⬇️");
         } else if (actChance < 0.2) {
           skillList.get("dual strikes")?.effect(ally, this.enemy as Character);
           ally.setActRate(skillList.get("dual strikes")!.actRate);
-          action.setText("🤺")
+          action.setText("🤺");
         } else {
           skillList.get("attack")?.effect(ally, this.enemy as Character);
           ally.setActRate(skillList.get("attack")!.actRate);
-          action.setText("👊")
+          action.setText("👊");
         }
 
         ally.resetAction();
