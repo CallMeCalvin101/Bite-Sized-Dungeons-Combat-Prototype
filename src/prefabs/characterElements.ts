@@ -356,7 +356,7 @@ export class ActionBar extends HealthBar {
     maxValue: number
   ) {
     super(scene, xPos, yPos, width, height, maxValue);
-    this.valueBar.setFillStyle(0x23cbf8);
+    this.valueBar.setFillStyle(0x0c7fb0);
     this.currentValue = maxValue;
     this.decrementRate = 5;
   }
