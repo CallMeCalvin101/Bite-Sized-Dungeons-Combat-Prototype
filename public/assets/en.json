@@ -1,0 +1,9 @@
+{
+    "settings": "SETTINGS",
+    "credits": "CREDITS",
+    "join_room" : "JOIN ROOM",
+    "team_name": "TEAM 24",
+    "connecting": "Connecting to Server'",
+    "loading": "Loading...",
+    "connected": "Connected to Glitch!"
+}
