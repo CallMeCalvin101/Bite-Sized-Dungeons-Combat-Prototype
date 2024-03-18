@@ -23,7 +23,7 @@ export class Credits extends Phaser.Scene {
     this.not_english = this.cache.json.get("not_english");
     this.setLanguage(); // set language
 
-    const team_name_str = "Programmer - Christian Perez\n Music - Louis Lim\n";
+    const team_name_str = "Production Lead, Core Gameplay Programmer - Vince Kurniadjaja\nTranslatioin - Sooin Jung\nProgrammer - Christian Perez\nMusic - Louis Lim\n";
 
     this.add
       .text(center_x, center_y, team_name_str, {
