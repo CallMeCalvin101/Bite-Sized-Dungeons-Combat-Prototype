@@ -3,6 +3,7 @@ import * as Phaser from "phaser";
 export class Menu extends Phaser.Scene {
   english: any;
   not_english: any;
+  korean: any;
   language: any;
 
   constructor() {
@@ -13,6 +14,7 @@ export class Menu extends Phaser.Scene {
     this.load.image("dragonLogo", "8_bit_dragon.png");
     this.load.json("english", "en.json");
     this.load.json("not_english", "lang.json");
+    this.load.json("korean", "kr.json");
     this.load.audio("btnHov", "btn_hover.mp3");
   }
 
@@ -21,6 +23,7 @@ export class Menu extends Phaser.Scene {
     const hover = this.sound.add("btnHov");
     this.english = this.cache.json.get("english");
     this.not_english = this.cache.json.get("not_english");
+    this.korean = this.cache.json.get("korean");
     this.setLanguage(); // set language
 
     const center_x = this.game.canvas.width / 2;
@@ -118,15 +121,17 @@ export class Menu extends Phaser.Scene {
   }
 
   setLanguage() {
-    if (localStorage.getItem("language")!) {
-      let get_lang = localStorage.getItem("language")!;
-      if (get_lang === "not_english") {
-        this.language = this.not_english;
+    if(localStorage.getItem('language')!) { 
+      let get_lang = localStorage.getItem('language')!;
+      if(get_lang === 'not_english') {
+          this.language = this.not_english;
+      } else if(get_lang === 'korean') {
+          this.language = this.korean;
       } else {
-        this.language = this.english;
+          this.language = this.english;
       }
     } else {
-      this.language = this.english;
+    this.language = this.english;
     }
   }
 

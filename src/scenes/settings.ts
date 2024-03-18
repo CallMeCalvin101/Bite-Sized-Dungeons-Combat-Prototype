@@ -3,6 +3,7 @@ import * as Phaser from 'phaser';
 export class Settings extends Phaser.Scene {
   english: any;
   not_english: any;
+  korean: any;
   language: any;
 
   constructor() {
@@ -12,6 +13,7 @@ export class Settings extends Phaser.Scene {
   preload() {
     this.load.json("english", "en.json");
     this.load.json("not_english", "lang.json");
+    this.load.json("korean", "kr.json");
   }
 
   create() {
@@ -21,6 +23,7 @@ export class Settings extends Phaser.Scene {
     
     this.english = this.cache.json.get('english');
     this.not_english = this.cache.json.get('not_english');
+    this.korean = this.cache.json.get("korean");
     this.setLanguage(); // set language
     
     const settings_intro = this.add.text(center_x, center_y, this.language.settings, { fontFamily: 'Silkscreen', color: '#D3B02C', fontSize: '60px'}).setOrigin(0.5);
@@ -31,6 +34,15 @@ export class Settings extends Phaser.Scene {
     english_settings.on('pointerout', () => { english_settings.setColor('#D3B02C'); });
     english_settings.on('pointerdown', () => { 
       localStorage.setItem('language', 'english');
+      this.scene.start('team');
+    });
+
+    const korean_settings = this.add.text(center_x, center_y + 10, '한국어', { fontFamily: 'Silkscreen', color: '#D3B02C', fontSize: '35px'}).setOrigin(0.5);
+    korean_settings.setInteractive();
+    korean_settings.on('pointerover', () => { korean_settings.setColor('#FFF'); });
+    korean_settings.on('pointerout', () => { korean_settings.setColor('#D3B02C'); });
+    korean_settings.on('pointerdown', () => { 
+      localStorage.setItem('language', 'korean');
       this.scene.start('team');
     });
     
@@ -60,12 +72,14 @@ export class Settings extends Phaser.Scene {
 
   setLanguage() {
     if(localStorage.getItem('language')!) { 
-    let get_lang = localStorage.getItem('language')!;
-    if(get_lang === 'not_english') {
-        this.language = this.not_english;
-        } else {
-        this.language = this.english;
-    }
+      let get_lang = localStorage.getItem('language')!;
+      if(get_lang === 'not_english') {
+          this.language = this.not_english;
+      } else if(get_lang === 'korean') {
+          this.language = this.korean;
+      } else {
+          this.language = this.english;
+      }
     } else {
     this.language = this.english;
     }

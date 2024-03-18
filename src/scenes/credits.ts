@@ -3,6 +3,7 @@ import * as Phaser from "phaser";
 export class Credits extends Phaser.Scene {
   english: any;
   not_english: any;
+  korean: any;
   language: any;
 
   constructor() {
@@ -12,6 +13,7 @@ export class Credits extends Phaser.Scene {
   preload() {
     this.load.json("english", "en.json");
     this.load.json("not_english", "lang.json");
+    this.load.json("korean", "kr.json");
   }
 
   create() {
@@ -21,6 +23,7 @@ export class Credits extends Phaser.Scene {
 
     this.english = this.cache.json.get("english");
     this.not_english = this.cache.json.get("not_english");
+    this.korean = this.cache.json.get("korean");
     this.setLanguage(); // set language
 
     const team_name_str = "Production Lead, Core Gameplay Programmer - Vince Kurniadjaja\nTranslatioin - Sooin Jung\nProgrammer - Christian Perez\nMusic - Louis Lim\n";
@@ -67,15 +70,17 @@ export class Credits extends Phaser.Scene {
   }
 
   setLanguage() {
-    if (localStorage.getItem("language")!) {
-      let get_lang = localStorage.getItem("language")!;
-      if (get_lang === "not_english") {
-        this.language = this.not_english;
+    if(localStorage.getItem('language')!) { 
+      let get_lang = localStorage.getItem('language')!;
+      if(get_lang === 'not_english') {
+          this.language = this.not_english;
+      } else if(get_lang === 'korean') {
+          this.language = this.korean;
       } else {
-        this.language = this.english;
+          this.language = this.english;
       }
     } else {
-      this.language = this.english;
+    this.language = this.english;
     }
   }
 }
