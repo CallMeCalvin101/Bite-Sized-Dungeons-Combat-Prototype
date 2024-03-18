@@ -200,11 +200,12 @@ export class Combat2 extends Phaser.Scene {
 
     this.player?.addAction(playBasicAttack);
 
-    if (this.game.config.player_class == "class 2") {
+    const curClass = localStorage.getItem("playerClass")!;
+    if (curClass == "class 2") {
       this.initBruiser();
-    } else if (this.game.config.player_class == "class 3") {
+    } else if (curClass == "class 3") {
       this.initStriker();
-    } else if (this.game.config.player_class == "class 4") {
+    } else if (curClass == "class 4") {
       this.initSupporter();
     } else {
       this.initAllRounder();

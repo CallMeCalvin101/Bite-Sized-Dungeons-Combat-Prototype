@@ -1,6 +1,6 @@
 import "./style.css";
 import Phaser from "phaser";
-import * as WebFont from "webfontloader";
+import WebFont from "webfontloader";
 import { Start } from "./scenes/startScene";
 import { Team } from "./scenes/team";
 import { Menu } from "./scenes/menu";
@@ -15,8 +15,8 @@ let config = {
   type: Phaser.CANVAS,
   width: 1280,
   height: 720,
-  scene: [Start, Team, Menu, Credits, Settings, Combat2, End],
-  player_class: "default",
+  scene: [Team, Menu, Credits, Settings, Start, Combat2, End],
+  playerClass: "default",
 };
 
 WebFont.load({

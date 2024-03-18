@@ -1,6 +1,4 @@
 import * as Phaser from 'phaser';
-import englishURL from '/assets/en.json?url';
-import notEnglishURL from '/assets/lang.json?url';
 
 export class Settings extends Phaser.Scene {
   english: any;
@@ -12,8 +10,8 @@ export class Settings extends Phaser.Scene {
   }
 
   preload() {
-    this.load.json('english', englishURL);
-    this.load.json('not_english', notEnglishURL);
+    this.load.json("english", "en.json");
+    this.load.json("not_english", "lang.json");
   }
 
   create() {

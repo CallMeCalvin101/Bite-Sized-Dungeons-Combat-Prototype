@@ -1,8 +1,4 @@
 import * as Phaser from "phaser";
-import dragonURL from "/assets/8_bit_dragon.png";
-import englishURL from "/assets/en.json?url";
-import notEnglishURL from "/assets/lang.json?url";
-import btnHov from "/assets/btn_hover.mp3";
 
 export class Menu extends Phaser.Scene {
   english: any;
@@ -14,10 +10,10 @@ export class Menu extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("dragonLogo", dragonURL);
-    this.load.json("english", englishURL);
-    this.load.json("not_english", notEnglishURL);
-    this.load.audio("btnHov", btnHov);
+    this.load.image("dragonLogo", "8_bit_dragon.png");
+    this.load.json("english", "en.json");
+    this.load.json("not_english", "lang.json");
+    this.load.audio("btnHov", "btn_hover.mp3");
   }
 
   create() {

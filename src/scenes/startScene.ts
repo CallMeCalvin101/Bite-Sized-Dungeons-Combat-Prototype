@@ -1,9 +1,3 @@
-import dragonURL from "/assets/8_bit_dragon.png";
-import englishURL from "/assets/en.json?url";
-import notEnglishURL from "/assets/lang.json?url";
-import btnHov from "/assets/btn_hover.mp3";
-import { Game } from "phaser";
-
 const GAME_WIDTH = 1280;
 const GAME_HEIGHT = 720;
 
@@ -21,10 +15,10 @@ export class Start extends Phaser.Scene {
 
   preload() {
     this.load.image("dragon", "dragon.png");
-    this.load.image("dragonLogo", dragonURL);
-    this.load.json("english", englishURL);
-    this.load.json("not_english", notEnglishURL);
-    this.load.audio("btnHov", btnHov);
+    this.load.image("dragonLogo", "8_bit_dragon.png");
+    this.load.json("english", "en.json");
+    this.load.json("not_english", "lang.json");
+    this.load.audio("btnHov", "btn_hover.mp3");
   }
 
   create() {
@@ -42,7 +36,7 @@ export class Start extends Phaser.Scene {
       0x141413
     );
 
-    const classSelection = this.add
+    this.add
       .text(GAME_WIDTH / 2, 80, "Select A Class", {
         fontFamily: "Silkscreen",
         color: "#D3B02C",
@@ -80,7 +74,7 @@ export class Start extends Phaser.Scene {
       class1.setColor(TEXT_COLOR);
     });
     class1.on("pointerdown", () => {
-      this.game.config.player_class = "class 1";
+      localStorage.setItem("playerClass", "class 1");
       this.scene.start("Combat2");
     });
 
@@ -100,7 +94,7 @@ export class Start extends Phaser.Scene {
       class2.setColor(TEXT_COLOR);
     });
     class2.on("pointerdown", () => {
-      this.game.config.player_class = "class 2";
+      localStorage.setItem("playerClass", "class 2");
       this.scene.start("Combat2");
     });
 
@@ -120,7 +114,7 @@ export class Start extends Phaser.Scene {
       class3.setColor(TEXT_COLOR);
     });
     class3.on("pointerdown", () => {
-      this.game.config.player_class = "class 3";
+      localStorage.setItem("playerClass", "class 3");
       this.scene.start("Combat2");
     });
 
@@ -140,7 +134,7 @@ export class Start extends Phaser.Scene {
       class4.setColor(TEXT_COLOR);
     });
     class4.on("pointerdown", () => {
-      this.game.config.player_class = "class 4";
+      localStorage.setItem("playerClass", "class 4");
       this.scene.start("Combat2");
     });
   }
