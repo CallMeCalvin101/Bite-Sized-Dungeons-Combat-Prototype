@@ -122,7 +122,7 @@ skillList.set("weakening blow", new weakeningStrike());
 class empower implements Skill {
   public name = "empower";
   public type = SkillType.TargetAlly;
-  public description = "Increases selected ally's damage for ";
+  public description = "Increases selected ally's damage for a while";
   public actRate = 0.75;
 
   effect(source: Player, target: Character) {
@@ -148,3 +148,17 @@ class drainingStrike implements Skill {
 }
 
 skillList.set("draining blow", new drainingStrike());
+
+class rest implements Skill {
+  public name = "rest";
+  public type = SkillType.TargetEnemy;
+  public description = "Heals yourself for a little amount (Reuse Cooldown: 1)";
+  public actRate = 0.75;
+
+  effect(source: Player, target: Character) {
+    source.heal(20);
+    target.damage(0);
+  }
+}
+
+skillList.set("rest", new rest());

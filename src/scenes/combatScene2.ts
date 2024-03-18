@@ -36,7 +36,6 @@ export class Combat2 extends Phaser.Scene {
   preload() {}
 
   create() {
-    console.log(this.game.config.player_class);
     this.drawBackground();
     this.initializeUI();
     this.initializePlayer();
@@ -201,20 +200,27 @@ export class Combat2 extends Phaser.Scene {
 
     this.player?.addAction(playBasicAttack);
 
-    /*
-    this.player?.addAction(
-      new TargetEnemyAction(
-        this,
-        this.skillDescription!,
-        (4 * GAME_WIDTH) / 5,
-        GAME_HEIGHT - 60,
-        this.player,
-        skillList.get(`dual strikes`)!,
-        this.enemy!,
-        5
-      )
-    );*/
+    if (this.game.config.player_class == "class 2") {
+      this.initBruiser();
+    } else if (this.game.config.player_class == "class 3") {
+      this.initStriker();
+    } else if (this.game.config.player_class == "class 4") {
+      this.initSupporter();
+    } else {
+      this.initAllRounder();
+    }
 
+    this.dimUI = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT - 50,
+      GAME_WIDTH,
+      100,
+      0x000000,
+      0.2
+    );
+  }
+
+  initAllRounder() {
     this.player?.addAction(
       new TargetAllyAction(
         this,
@@ -228,10 +234,15 @@ export class Combat2 extends Phaser.Scene {
       )
     );
 
+    this.addDualStrikes();
+    this.addEmpower();
+  }
+
+  initBruiser() {
     const playDrainBlow = new TargetEnemyAction(
       this,
       this.skillDescription!,
-      (GAME_WIDTH * 3) / 5,
+      (GAME_WIDTH * 2) / 5,
       GAME_HEIGHT - 60,
       this.player!,
       skillList.get(`draining blow`)!,
@@ -245,8 +256,110 @@ export class Combat2 extends Phaser.Scene {
       }
     });
 
-    this.player?.addAction(playDrainBlow);
+    const playArmorPierce = new TargetEnemyAction(
+      this,
+      this.skillDescription!,
+      (GAME_WIDTH * 3) / 5,
+      GAME_HEIGHT - 60,
+      this.player!,
+      skillList.get(`armor pierce`)!,
+      this.enemy!,
+      4
+    );
 
+    playArmorPierce.on("pointerdown", () => {
+      if (playArmorPierce.isUsable()) {
+        this.simulateHit();
+      }
+    });
+
+    this.player?.addAction(playDrainBlow);
+    this.player?.addAction(playArmorPierce);
+    this.addRampage();
+  }
+
+  initStriker() {
+    this.player?.addAction(
+      new TargetEnemyAction(
+        this,
+        this.skillDescription!,
+        (GAME_WIDTH * 2) / 5,
+        GAME_HEIGHT - 60,
+        this.player,
+        skillList.get(`rest`)!,
+        this.enemy!,
+        2
+      )
+    );
+
+    this.addDualStrikes();
+    this.addRampage();
+  }
+
+  initSupporter() {
+    const playWeakening = new TargetEnemyAction(
+      this,
+      this.skillDescription!,
+      (GAME_WIDTH * 2) / 5,
+      GAME_HEIGHT - 60,
+      this.player!,
+      skillList.get(`weakening blow`)!,
+      this.enemy!,
+      4
+    );
+
+    playWeakening.on("pointerdown", () => {
+      if (playWeakening.isUsable()) {
+        this.simulateHit();
+      }
+    });
+
+    this.player?.addAction(playWeakening);
+
+    this.addDualStrikes();
+    this.addEmpower();
+  }
+
+  addEmpower() {
+    this.player?.addAction(
+      new TargetAllyAction(
+        this,
+        this.skillDescription!,
+        (GAME_WIDTH * 4) / 5,
+        GAME_HEIGHT - 60,
+        this.player,
+        skillList.get(`empower`)!,
+        this.allies,
+        7
+      )
+    );
+  }
+
+  addDualStrikes() {
+    const playDualStrikes = new TargetEnemyAction(
+      this,
+      this.skillDescription!,
+      (GAME_WIDTH * 3) / 5,
+      GAME_HEIGHT - 60,
+      this.player!,
+      skillList.get(`dual strikes`)!,
+      this.enemy!,
+      5
+    );
+
+    playDualStrikes.on("pointerdown", () => {
+      if (playDualStrikes.isUsable()) {
+        this.simulateHit();
+        setTimeout(() => {
+          this.simulateHit();
+        }, 200);
+      }
+    });
+
+    this.player?.addAction(playDualStrikes);
+  }
+
+  addRampage() {
     const playRampage = new TargetEnemyAction(
       this,
       this.skillDescription!,
@@ -277,15 +390,6 @@ export class Combat2 extends Phaser.Scene {
     });
 
     this.player?.addAction(playRampage);
-
-    this.dimUI = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT - 50,
-      GAME_WIDTH,
-      100,
-      0x000000,
-      0.2
-    );
   }
 
   drawBackground() {
@@ -393,6 +497,6 @@ export class Combat2 extends Phaser.Scene {
 
     setTimeout(() => {
       hitMarker.destroy();
-    }, 200);
+    }, 400);
   }
 }

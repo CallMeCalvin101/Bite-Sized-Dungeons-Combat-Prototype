@@ -65,7 +65,7 @@ export class Start extends Phaser.Scene {
     });
 
     const class1 = this.add
-      .text(GAME_WIDTH / 3, GAME_HEIGHT / 2 + 100, "Class 1", {
+      .text(GAME_WIDTH / 3, GAME_HEIGHT / 2 + 100, "All-Rounder", {
         fontFamily: FONT,
         color: TEXT_COLOR,
         fontSize: "40px",
@@ -85,7 +85,7 @@ export class Start extends Phaser.Scene {
     });
 
     const class2 = this.add
-      .text(GAME_WIDTH / 3, GAME_HEIGHT / 2 + 225, "Class 2", {
+      .text(GAME_WIDTH / 3, GAME_HEIGHT / 2 + 225, "Bruiser", {
         fontFamily: FONT,
         color: TEXT_COLOR,
         fontSize: "40px",
@@ -105,7 +105,7 @@ export class Start extends Phaser.Scene {
     });
 
     const class3 = this.add
-      .text((GAME_WIDTH * 2) / 3, GAME_HEIGHT / 2 + 100, "Class 3", {
+      .text((GAME_WIDTH * 2) / 3, GAME_HEIGHT / 2 + 100, "Striker", {
         fontFamily: FONT,
         color: TEXT_COLOR,
         fontSize: "40px",
@@ -125,7 +125,7 @@ export class Start extends Phaser.Scene {
     });
 
     const class4 = this.add
-      .text((GAME_WIDTH * 2) / 3, GAME_HEIGHT / 2 + 225, "Class 4", {
+      .text((GAME_WIDTH * 2) / 3, GAME_HEIGHT / 2 + 225, "Supporter", {
         fontFamily: FONT,
         color: TEXT_COLOR,
         fontSize: "40px",
