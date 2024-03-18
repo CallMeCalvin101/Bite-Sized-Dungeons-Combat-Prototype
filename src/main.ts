@@ -15,7 +15,8 @@ let config = {
   type: Phaser.CANVAS,
   width: 1280,
   height: 720,
-  scene: [Team, Menu, Credits, Settings, Start, Combat2, End],
+  scene: [Start, Team, Menu, Credits, Settings, Combat2, End],
+  player_class: "default",
 };
 
 WebFont.load({

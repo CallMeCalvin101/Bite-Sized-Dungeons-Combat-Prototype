@@ -39,14 +39,14 @@ export class Menu extends Phaser.Scene {
       .setOrigin(0.5);
     //const title_image = this.add.image(center_x, center_y - 80, 'title').setScale(.75).setOrigin(0.5);
     const dragon_image = this.add
-      .image(center_x, center_y - 175 + 80, "dragonLogo")
+      .image(center_x, center_y - 175 + 100, "dragonLogo")
       .setScale(0.35)
       .setOrigin(0.5)
       .setVisible(false);
     // sets title in place
     this.tweens.add({
       targets: [game_name],
-      y: center_y - 385 + 80,
+      y: center_y - 385 + 100,
       duration: 3000,
       ease: "Power2",
       onComplete: () => {
@@ -56,7 +56,7 @@ export class Menu extends Phaser.Scene {
 
     this.tweens.add({
       targets: [dragon_image],
-      y: center_y - 170 + 80,
+      y: center_y - 170 + 100,
       duration: 1500,
       ease: "Power2",
       yoyo: true,

@@ -36,6 +36,7 @@ export class Combat2 extends Phaser.Scene {
   preload() {}
 
   create() {
+    console.log(this.game.config.player_class);
     this.drawBackground();
     this.initializeUI();
     this.initializePlayer();
